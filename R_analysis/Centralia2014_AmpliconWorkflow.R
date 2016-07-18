@@ -329,9 +329,9 @@ Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
-plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA", xlab= "PCoA1: 48.0% var. explained", ylab= "PCoA2: 15.2% var. explained")
+plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",round(ax1.v,3)," var. explained",sep=""), ylab= paste("PCoA2: ",round(ax2.v,3)," var. explained",sep=""))
 textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=1)
-legend('topright',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
+legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
 
 #Add env vectors to plot that are significant p < 0.10
 plot(envEF, p.max=0.10, col="black")
@@ -340,7 +340,7 @@ plot(envEF, p.max=0.10, col="black")
 dev.off()
 setEPS()
 postscript("Fig4.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
-plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA", xlab= "PCoA1: 48.0% var. explained", ylab= "PCoA2: 15.2% var. explained")
+plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA", xlab= paste("PCoA1: ",100*round(ax1.v,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v,3),"%var. explained",sep=""))
 textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=0.8)
 legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
 plot(envEF, p.max=0.10, col="black", cex=1)
@@ -407,12 +407,11 @@ ax2.v.f.t=cap1$CA$eig[2]/sum(cap1$CA$eig)
 
 #Plot:  supporting figure
 par(mfrow=c(1,2))
-plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab="PCoA Axis 1: 45% var. explained", ylab= "PCoA Axis 2: 22.8% var. explained")
+plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",round(ax2.v.f,3)," var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
 plot(envFIT.fire, p=0.10)
-plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab="CAP Axis 1: 49.8% var. explained", ylab="CAP Axis 2: 19.2% var. explained")
+plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP_Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP_Ax2: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""))
 plot(c.ef, p= 0.10)
-
 
 
 #####################
@@ -567,17 +566,17 @@ summary(ind, alpha=0.001, indvalcomp=TRUE, At=0.95, Bt=0.95)
 rdp.nosigs[row.names(comm)=="704748"]
 rdp.nosigs[row.names(comm)=="25116"]
 rdp.nosigs[row.names(comm)=="54107"]
-rdp.nosigs[row.names(comm)=="OTU_dn_211"]
+#rdp.nosigs[row.names(comm)=="OTU_dn_211"]
 
 #taxonomic affiliations of the top OTUs that are indicators of recovered soils (A and B = 1, p = 0.001)
 rdp.nosigs[row.names(comm)=="511701"]
-rdp.nosigs[row.names(comm)=="OTU_dn_3450"]
-rdp.nosigs[row.names(comm)=="OTU_dn_9828"]
-rdp.nosigs[row.names(comm)=="OTU_dn_19940"]
+#rdp.nosigs[row.names(comm)=="OTU_dn_3450"]
+#rdp.nosigs[row.names(comm)=="OTU_dn_9828"]
+#rdp.nosigs[row.names(comm)=="OTU_dn_19940"]
 rdp.nosigs[row.names(comm)=="153350"]
-rdp.nosigs[row.names(comm)=="OTU_dn_70"]
+#rdp.nosigs[row.names(comm)=="OTU_dn_70"]
 
 which(row.names(comm)=="153350", arr.ind = FALSE)
 rdp.nosigs[277]
-which(row.names(comm)=="OTU_dn_70", arr.ind = FALSE)
+#which(row.names(comm)=="OTU_dn_70", arr.ind = FALSE)
 rdp.nosigs[30]
