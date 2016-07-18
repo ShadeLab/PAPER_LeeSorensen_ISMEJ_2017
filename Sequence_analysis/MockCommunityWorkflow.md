@@ -305,7 +305,7 @@ summarize_taxa.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_
 biom convert -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -o MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt --to-tsv --header-key taxonomy --output-metadata-id "ConsensusLineage"
 ```
 
-### Move files to local computer for analysis in R:
+### Move files to local computer for analysis in R (remember to format to remove hash (#) from first row header
 * OTU table: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt
 * phylum summary: phylum_summary/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt
 * alpha diversity: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt
