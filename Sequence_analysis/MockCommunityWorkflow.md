@@ -306,7 +306,7 @@ biom convert -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even3
 ```
 
 ### Move files to local computer for analysis in R:
-### OTU table: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt
-### phylum summary: phylum_summary/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt
-### alpha diversity: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt
-### betadiv_even321000/weighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt
+* OTU table: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt
+* phylum summary: phylum_summary/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt
+* alpha diversity: MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt
+* betadiv_even321000/weighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt
