@@ -289,6 +289,7 @@ alpha_rarefaction.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collap
 ```
 
 ### xiv.  Diversity calculations
+```
 #alpha diversity analyses on even, collapsed dataset
 alpha_diversity.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -m PD_whole_tree,observed_otus -t MASTER_RepSeqs_aligned_clean.tre -o MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt
 
@@ -297,6 +298,7 @@ beta_diversity.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_
 
 #summarize at phylum level
 summarize_taxa.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -L 2 -o phylum_summary/
+```
 
 ### xv.  Convert biom for export
 ```
