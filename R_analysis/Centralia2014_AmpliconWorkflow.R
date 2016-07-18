@@ -407,10 +407,10 @@ ax2.v.f.t=cap1$CA$eig[2]/sum(cap1$CA$eig)
 
 #Plot:  supporting figure
 par(mfrow=c(1,2))
-plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",round(ax2.v.f,3)," var. explained",sep=""))
+plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3)," var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
 plot(envFIT.fire, p=0.10)
-plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP_Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP_Ax2: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""))
+plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP_Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP_Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
 plot(c.ef, p= 0.10)
 
 
