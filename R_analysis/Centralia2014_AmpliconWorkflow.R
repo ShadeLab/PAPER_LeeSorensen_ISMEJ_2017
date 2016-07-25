@@ -1,9 +1,23 @@
-library(vegan)
-library(ggplot2)
-library(reshape2)
+#Before you start
+# Make sure you are using the latest version of R (and Rstudio)
+#The following packages needed to run the whole script
+# calibrate 1.7.2 - no?
+# gplots 3.0.1
+# ggplot2 2.1.0
+# indicspecies 1.7.5
+# limma 3.26.9
+# mass 7.3-45 (calibrate dependency)
+# outliers 0.14
+# reshape2 1.4.1
+# vegan 2.4-0
 
 ################################
 ###Plotting soil contextual data - FINISHED
+#load R libraries for this section
+library(ggplot2)
+library(reshape2)
+library(outliers)
+
 #read in mapping file with soil data
 map=read.table("Centralia_Collapsed_Map_forR.txt", header=TRUE, sep="\t")
 
@@ -37,11 +51,10 @@ fig2=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
 fig2
 ggsave("Fig2.eps", width=178, units="mm")
 
-##make a dataset just of soil quantitative variables
+##Subset contextual data inclusive of soil quantitative variables
 env=map[,c("SoilTemperature_to10cm", "NO3N_ppm", "pH", "K_ppm", "Mg_ppm", "OrganicMatter_500", "NH4N_ppm", "SulfateSulfur_ppm", "Ca_ppm", "Fe_ppm", "As_ppm", "P_ppm", "SoilMoisture_Per","Fire_history")]
 
 ##Test for outliers, loop will print all significant outliers and their sampleID - these were not removed from analysis
-library(outliers)
 for (i in 1:ncol(env)){
   x=grubbs.test(env[,i], type=10)
   if(x$p.value < 0.05){
@@ -83,7 +96,12 @@ ggsave("SFig2.eps", width=86, units="mm")
 
 #####################################################
 ###Preparing the OTU and distance tables for analysis - FINISHED
-#read in community OTU table, and transpose (rarefied collapsed table, output from QIIME)
+#load R libraries for this section
+library(ggplot2)
+library(reshape2)
+library(vegan)
+
+#read in community OTU table, and transpose (rarefied collapsed MASTER table, output from QIIME)
 comm=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1, check.names=FALSE, sep="\t")
 
 #remove consensus lineage from otu table
@@ -95,12 +113,12 @@ comm=comm[,-ncol(comm)]
 #sort community by colnames (to be in the consistent, consecutive order for all analyses)
 comm=comm[,order(colnames(comm))]
 
-#who are the singleton OTUs?
+#who are the singleton OTUs (observed 1 time in an abundance of 1 sequence)?
 singletonOTUs=row.names(comm)[rowSums(comm)==1]
 length(singletonOTUs)
-#total 1439 singleton OTUs
+#total 1396 singleton OTUs
 g=grep("_dn", singletonOTUs)
-#1267 de novo OTUs are singletons
+#1220 de novo OTUs are singletons
 
 #who are the remaining de novo OTUs?
 g=grep("_dn_",row.names(comm))
@@ -197,6 +215,11 @@ outdiv
 
 #########################
 ###Phylum-level responses  - FINISHED
+#load R libraries for this section
+library(gplots)
+library(ggplot2)
+
+
 #read in phylum level OTU table (QIIME output)
 comm.phylum=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt", sep="\t", header=TRUE, row.names=1)
 
@@ -275,9 +298,7 @@ out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]>0,]
 out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]<0,]
 
 
-#heatmap of phylum-level responses, standardized (z-score) based on occurrences (oc) - across rows
-library(gplots)
-
+#heatmap of phylum-level responses, standardized (z-score) based on occurrences (oc) - across rows (gplots)
 #standardize responses
 comm.phylum.oc=decostand(comm.phylum, method="standardize", margin=1)
 comm.phylum.oc=as.matrix(comm.phylum.oc)
@@ -311,8 +332,12 @@ dev.off()
 
 ################################
 ###Comparative diversity analyses - FINISHED 
+#load R libraries for this section
+#library(calibrate)
+library(ggplot2)
+library(vegan)
+
 # use weighted unifrac table (QIIME output)
-library(calibrate)
 uf.pcoa=cmdscale(uf.d, eig=TRUE)
 #calculate percent variance explained, then add to plot
 ax1.v=uf.pcoa$eig[1]/sum(uf.pcoa$eig)
@@ -364,8 +389,9 @@ mantel(uf.d,space.d)
 
 #####################
 #constrained PCoA (CAP) _ FINISHED
-#to ask about explanatory value of abiotic factors for fire-affected sites, after temp is accounted for
-
+#to determine  explanatory value of abiotic factors for fire-affected sites, after temp is accounted for
+###Comparative diversity analyses - FINISHED 
+#load R libraries for this section
 library(vegan)
 
 #reduce uf to fire only
@@ -410,14 +436,15 @@ par(mfrow=c(1,2))
 plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3)," var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
 plot(envFIT.fire, p=0.10)
-plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP_Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP_Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
+plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
 plot(c.ef, p= 0.10)
 
 
 #####################
 #Sloan neutral model fitting - FINISHED
 #NOTE:  must use full dataset (including singleton OTUs) for this analysis 
-#Source for model fits is from Burns et al. ISMEJ 2015, downloaded R code from their supporting materials.
+#Source for model fits is from Burns et al. ISMEJ 2015, downloaded R code from their supporting materials
+#Source code requires:  minpack.lm, Hmisc, stats4 packages
 source("sncm.fit_function.R")
 
 #assign variables for function
@@ -513,6 +540,7 @@ write.table(results, "SloanNeutralModel.txt", quote=FALSE, sep="\t")
 
 ###########################
 ###Venn analysis - FINISHED
+#Limma must be installed from bioconductor using the commands below
 #source("http://bioconductor.org/biocLite.R")
 #biocLite("limma")
 library(limma)
@@ -522,8 +550,9 @@ fireclass=map[,"Classification"]
 
 #who are the most prevalent fire-affected OTUs
 fire=comm[,fireclass=="FireAffected"]
-fire=fire[rowSums(fire)>0,]
-order(fire, rowSums(fire), decreasing=TRUE)
+###CHECK THIS!
+fire2=fire[rowSums(fire)>0,]
+order(fire2, rowSums(fire), decreasing=TRUE)
 
 active.pa=1*(comm[,fireclass=="FireAffected"]>0)
 recov.pa=1*(comm[,fireclass=="Recovered"]>0)

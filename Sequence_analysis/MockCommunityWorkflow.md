@@ -234,16 +234,26 @@ rm templine.txt
 ### vi.  Filter chloroplast and mitochondria from OTU table and RepSeqs file
 ```
 #remove chloroplasts and mitochondria (keep cyanobacteria that are not chloroplasts)
-filter_taxa_from_otu_table.py -i OTU_hdf5_filteredfailedalignments_rdp.biom -o OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom -n  c__Streptophyta,c__Chlorophyta,f_mitochondria
+filter_taxa_from_otu_table.py -i OTU_hdf5_filteredfailedalignments_rdp.biom -o OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom -n o__Streptophyta,o__Chlorophyta,f__mitochondria
 
 #remove same Mito and Chloro sequences from RepSeqs file
-filter_fasta.py -f RepSeqs_filteredfailedalignments.fa -o MASTER_RepSeqs_filteredfailedalignments_filteredCM.fa -b OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
+filter_fasta.py -f RepSeqs_filteredfailedalignments.fa -o MASTER_RepSeqs_filteredfailedalignments_rmCM.fa -b OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
 
-#optional: summarize biom table
-#biom summarize-table -i OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
+#optional sanity check: summarize new biom table and check that it has fewer sequences than original
+#original
+biom summarize-table -i OTU_hdf5_filteredfailedalignments_rdp.biom
+#filtered
+biom summarize-table -i OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
+
+#optional sanity check:  count seqs in new fasta, and check that it has fewer than original
+#orginal
+count_seqs.py -i RepSeqs_filteredfailedalignments.fa
+#filtered
+count_seqs.py -i MASTER_RepSeqs_filteredfailedalignments_rmCM.fa
+
 
 ## output files
-### MASTER_RepSeqs_filteredfailedalignments_filteredCM.fa
+### MASTER_RepSeqs_filteredfailedalignments_rmCM.fa
 ### OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
 ```
 

@@ -1,5 +1,6 @@
 .DS_Store
 R_analysis/Fig2.eps
+R_analysis/Fig2.jpg
 R_analysis/Fig3.eps
 R_analysis/Fig4.eps
 R_analysis/Fig5A.eps
@@ -13,3 +14,5 @@ R_analysis/SFig3D.eps
 R_analysis/SFig3E.eps
 R_analysis/SloanNeutralModel.txt
 R_analysis/VennCounts.txt
+R_analysis/.RData
+R_analysis/.Rhistory
