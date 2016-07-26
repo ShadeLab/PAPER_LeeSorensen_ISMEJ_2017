@@ -1,7 +1,7 @@
 #Before you start
 # Make sure you are using the latest version of R (and Rstudio)
 #The following packages needed to run the whole script
-# calibrate 1.7.2 - no?
+# calibrate 1.7.2
 # gplots 3.0.1
 # ggplot2 2.1.0
 # indicspecies 1.7.5
@@ -64,7 +64,7 @@ for (i in 1:ncol(env)){
   }
 #samples 13 (for pH, Ca) and 10 (for NO3N, NH4N,Fe) are common outliers - both have high temps. Sample 3 is also outlier for Mg and OM; this is a recovered site.  Generally this test indicates a lot of variability.
 
-#correlation test between temperature ad other soil chemistry
+#correlation test between temperature and other soil chemistry
 for(i in 1:ncol(env)){
   ct=cor.test(env[,"SoilTemperature_to10cm"],env[,i])
   if (ct$p.value < 0.05){
@@ -333,7 +333,7 @@ dev.off()
 ################################
 ###Comparative diversity analyses - FINISHED 
 #load R libraries for this section
-#library(calibrate)
+library(calibrate)
 library(ggplot2)
 library(vegan)
 
@@ -354,7 +354,8 @@ Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
-plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",round(ax1.v,3)," var. explained",sep=""), ylab= paste("PCoA2: ",round(ax2.v,3)," var. explained",sep=""))
+plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v,3),"% var. explained",sep=""))
+#textxy is from the calibrate library
 textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=1)
 legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
 
