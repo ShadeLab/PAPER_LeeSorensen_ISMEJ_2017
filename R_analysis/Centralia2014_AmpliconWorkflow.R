@@ -77,11 +77,11 @@ for(i in 1:ncol(env)){
 mean(env[map[,"Classification"]=="Reference","pH"])
 mean(env[map[,"Classification"]== "Recovered","pH"])
 
-#plot cell counts and 16S rRNA qPCR data (S Figure 2)
+#plot cell counts and 16S rRNA qPCR data (S Figure 1)
 map.long.counts=melt(map, id.vars=c("SampleID", "Classification"), measure.vars=c("rRNA_gene_copies_per_g_dry_soil","CellCounts_per_g_dry_soil"))
 labels=c(rRNA_gene_copies_per_g_dry_soil="rRNA gene copies",CellCounts_per_g_dry_soil="Cell counts")
 
-sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
+sfig1 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   geom_boxplot() + 
   geom_jitter(aes(shape=Classification))+
   facet_grid(variable~., scales="free_y", labeller=labeller(variable = labels))+
@@ -90,8 +90,8 @@ sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   scale_x_discrete(name="Fire classification")+
   scale_y_continuous(name="value per g dry soil")+
   theme_bw(base_size=10)
-sfig2
-ggsave("SFig2.eps", width=86, units="mm")
+sfig1
+ggsave("SFig1.eps", width=86, units="mm")
 
 
 #####################################################
@@ -149,7 +149,7 @@ ref.t=comm.t[map$Classification=="Reference",]
 rec.t=comm.t[map$Classification=="Recovered",]
 fire.t=comm.t[map$Classification=="FireAffected",]
 
-###
+####################
 ###Calculate and plot alpha diversity - FINISHED
 #read in alpha diversity table (output from QIIME)
 div=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt", header=TRUE)
@@ -259,18 +259,18 @@ colnames(m.summary.p)=c("FireAffected", "Recovered", "Reference")
 #sort in decreasing total abundance order
 m.summary.p=m.summary.p[order(rowSums(m.summary.p),decreasing=TRUE),]
 
-#plot (Figure 5A)
+#plot (Figure 5)
 m.summary.p.long=melt(m.summary.p, id.vars=row.names(m.summary.p),measure.vars=c("FireAffected", "Recovered", "Reference"))
 colors=c("red", "yellow", "green")
 
-fig5A=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
+fig5=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
   geom_dotplot(binaxis="y", dotsize = 3)+
   facet_grid(Var2~.)+
   scale_fill_manual(values=colors, guide=FALSE)+
   labs(x="Phylum", y="Mean relative abundance", las=1)+
   theme(axis.text.x = element_text(angle = 90, size = 10, face = "italic"))
-fig5A
-ggsave("Fig5A.eps", width=178, units="mm")
+fig5
+ggsave("Fig5.eps", width=178, units="mm")
 
 #Welch's t-test for all phyla (Supporting Table X)
 u=row.names(comm.phylum)
@@ -305,30 +305,31 @@ comm.phylum.oc=as.matrix(comm.phylum.oc)
 
 
 #create color pallette; see: http://colorbrewer2.org/ 
-hc=colorRampPalette(c("#91bfdb","white","#fc8d59"), interpolate="linear")
+#hc=colorRampPalette(c("#91bfdb","white","#fc8d59"), interpolate="linear")
 
 #more info on heatmaps:  http://www.inside-r.org/packages/cran/gplots/docs/heatmap.2
 #dev.off()
-fig5B<-heatmap.2(comm.phylum.oc,col=hc(100),scale="row",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", labRow=phylumnames, colCol=c(map$Class_Color), margins=c(5,13), srtCol=90)
+#This figure was omitted from paper
+#fig5B<-heatmap.2(comm.phylum.oc,col=hc(100),scale="row",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", labRow=phylumnames, colCol=c(map$Class_Color), margins=c(5,13), srtCol=90)
 
 #export heatmap 
-dev.off()
+#dev.off()
 #178 mm is 7 inches
-setEPS()
-postscript("Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
-fig5B<-heatmap.2(comm.phylum.oc,
-            col=hc(100),
-            scale="row",
-            key=TRUE,
-            symkey=FALSE, 
-            trace="none", 
-            density.info="none",
-            dendrogram="both", 
-            labRow=phylumnames, 
-            colCol=c(map$Class_Color), 
-            margins=c(5,13), 
-            srtCol=90)
-dev.off()
+#setEPS()
+#postscript("Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
+#fig5B<-heatmap.2(comm.phylum.oc,
+#            col=hc(100),
+#            scale="row",
+#            key=TRUE,
+#            symkey=FALSE, 
+#            trace="none", 
+#            density.info="none",
+#            dendrogram="both", 
+#            labRow=phylumnames, 
+#            colCol=c(map$Class_Color), 
+#            margins=c(5,13), 
+#            srtCol=90)
+#dev.off()
 
 ################################
 ###Comparative diversity analyses - FINISHED 
@@ -434,12 +435,21 @@ ax2.v.f.t=cap1$CA$eig[2]/sum(cap1$CA$eig)
 
 #Plot:  supporting figure
 par(mfrow=c(1,2))
-plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2] , main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3)," var. explained",sep=""))
+plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3)," var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
 plot(envFIT.fire, p=0.10)
 plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
 plot(c.ef, p= 0.10)
 
+setEPS()
+postscript("SFig3AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+par(mfrow=c(1,2))
+plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
+textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
+plot(envFIT.fire, p=0.10)
+plot(cap1, cex=0.9,main = "Temperature-constrained \nfire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
+plot(c.ef, p= 0.10)
+dev.off()
 
 #####################
 #Sloan neutral model fitting - FINISHED
@@ -504,22 +514,22 @@ for(i in 1:length(l1)){
   ap= temp$freq > (temp$pred.upr)
   bp= temp$freq < (temp$pred.lwr)
   
-  #plot figure (SFig3)
+  #plot figure (SFig4)
   setEPS()
   if(i == 1){
-  postscript("SFig3A.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig4A.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i == 2){
-  postscript("SFig3B.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig4B.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==3){
-  postscript("SFig3C.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig4C.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==4){
-    postscript("SFig3D.eps", width = 2.33, height=3, pointsize=10,paper="special")
+    postscript("SFig4D.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==5){
-    postscript("SFig3E.eps", width = 2.33, height=3, pointsize=10,paper="special")
+    postscript("SFig4E.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
 
   plot(x=log(temp$p), y=temp$freq, main=names[i], xlab="Log Abundance", ylab="Occurrence Frequency")
@@ -548,12 +558,6 @@ library(limma)
 
 #make a binary OTU table for each fire classification
 fireclass=map[,"Classification"]
-
-#who are the most prevalent fire-affected OTUs
-fire=comm[,fireclass=="FireAffected"]
-###CHECK THIS!
-fire2=fire[rowSums(fire)>0,]
-order(fire2, rowSums(fire), decreasing=TRUE)
 
 active.pa=1*(comm[,fireclass=="FireAffected"]>0)
 recov.pa=1*(comm[,fireclass=="Recovered"]>0)
@@ -593,20 +597,135 @@ summary(ind, alpha=0.001, indvalcomp=TRUE, At=0.95, Bt=0.95)
 
 
 #taxonomic affiliations of the OTUs that are indicators of fire-affected soils (A and B > 0.95, p = 0.001)
+rdp.nosigs[row.names(comm)=="OTU_dn_34"]
+rdp.nosigs[row.names(comm)=="OTU_dn_2"]
+rdp.nosigs[row.names(comm)=="OTU_dn_125"]
 rdp.nosigs[row.names(comm)=="704748"]
+rdp.nosigs[row.names(comm)=="240440"]
 rdp.nosigs[row.names(comm)=="25116"]
-rdp.nosigs[row.names(comm)=="54107"]
-#rdp.nosigs[row.names(comm)=="OTU_dn_211"]
 
 #taxonomic affiliations of the top OTUs that are indicators of recovered soils (A and B = 1, p = 0.001)
+rdp.nosigs[row.names(comm)=="OTU_dn_5462"]
 rdp.nosigs[row.names(comm)=="511701"]
-#rdp.nosigs[row.names(comm)=="OTU_dn_3450"]
-#rdp.nosigs[row.names(comm)=="OTU_dn_9828"]
-#rdp.nosigs[row.names(comm)=="OTU_dn_19940"]
-rdp.nosigs[row.names(comm)=="153350"]
-#rdp.nosigs[row.names(comm)=="OTU_dn_70"]
+rdp.nosigs[row.names(comm)=="OTU_dn_3443"]
+rdp.nosigs[row.names(comm)=="OTU_dn_1439"]
+rdp.nosigs[row.names(comm)=="OTU_dn_2728"]
+rdp.nosigs[row.names(comm)=="OTU_dn_14082"]
 
-which(row.names(comm)=="153350", arr.ind = FALSE)
-rdp.nosigs[277]
-#which(row.names(comm)=="OTU_dn_70", arr.ind = FALSE)
-rdp.nosigs[30]
+#example to extract RDP taxonomy assignment
+which(row.names(comm)=="704748", arr.ind = FALSE)
+rdp.nosigs[138]
+which(row.names(comm)=="OTU_dn_34", arr.ind = FALSE)
+rdp.nosigs[41]
+
+##########################################
+#Analysis of the top 10 most prevalent taxa in fire-affected and recovered soils
+#libraries needed for this
+library(vegan)
+library(gplots)
+
+#Do hot soils have consistent dominant membership?
+fire=t(fire.t)
+fire.new=fire[rowSums(fire)>0,]
+rdp.fire=as.vector(rdp.nosigs[rowSums(fire)>0])
+dim(fire.new)
+
+rec=t(rec.t)
+rec.new=rec[rowSums(rec)>0,]
+rdp.rec=as.vector(rdp.nosigs[rowSums(rec)>0])
+dim(rec.new)
+
+#Function to provide the OTU numbers and Taxonomic IDs are the top (default=10) in each site.
+extractdominant.f<-function(data,rdp,top.no=10){
+  out1=NULL
+  out2=NULL
+  for(i in 1:ncol(data)){
+    s=sort(data[,i], decreasing=TRUE, index.return=TRUE)
+    otuIDs=names(s$x[1:top.no])
+    rdp.out=rdp[s$ix[1:top.no]]
+    sampleID=c(rep(colnames(data)[[i]],top.no))
+    temp=cbind(sampleID,otuIDs)
+    out1=rbind(out1,temp)
+    out2=cbind(out2,rdp.out)
+  }
+  colnames(out2)=colnames(data)
+  #write.table(out2, paste("rdp_",top.no,".txt",sep=""), quote=FALSE, sep="\t")
+  #who are the top-10 ranked
+  
+  u=unique(out1[,2])
+  l=length(unique(out1[,2]))
+  actual.prop=l/dim(out1)[[1]]
+  expected.prop=top.no/dim(out1)[[1]]
+  print("Unique OTU IDs within the most abundant")
+  print(u)
+  print("Number of unique OTUs within the most abundant")
+  print(l)
+  print("Redundancy index given the number of samples and the top number selected 1.00 means completely nonredundant, every top taxa was observed only 1 time across all samples")
+  print(actual.prop)
+  print("Expected redundancy index")
+  print(expected.prop)
+  #print("List of top taxa by sample")
+  #print(out2)
+  
+  return(out2)
+}
+
+fire.out=extractdominant.f(fire.new,rdp.fire,10)
+rec.out=extractdominant.f(rec.new,rdp.rec,10)
+
+data=NULL
+data=fire.new
+top.no=10
+rdp.in=rdp.fire
+
+subsettop.f=function(data, top.no, rdp.in){
+  otuIDs=NULL
+  rdpIDs=NULL
+  for(i in 1:ncol(data)){
+    s=sort(data[,i], decreasing=TRUE, index.return=TRUE)
+    otuIDs=c(otuIDs, names(s$x[1:top.no]))
+    rdpIDs=c(rdpIDs, rdp.in[s$ix[1:top.no]])
+  }
+  temp=cbind(otuIDs,rdpIDs)
+  #print(temp)
+  u.top=unique(otuIDs)
+  #temp.u=temp[is.element(temp[,"otuIDs"],u.top),]
+  #write.table(temp.u, "OTURDP_Top10.txt", sep="\t", quote=FALSE)
+  top10.otu=NULL
+  for(j in 1:nrow(data)){
+    if(is.element(row.names(data)[j],u.top)){
+      top10.otu=rbind(top10.otu,data[j,])
+    }
+  }
+  row.names(top10.otu)=u.top
+  colnames(top10.otu)=colnames(data)
+  return(top10.otu)
+}
+
+topfire=subsettop.f(fire.new,10,rdp.fire)
+#how many OTUs are de novo?
+length(grep("dn",rownames(topfire)))
+
+#create color pallette; see: http://colorbrewer2.org/ 
+hc=colorRampPalette(c("#91bfdb","white","#fc8d59"), interpolate="linear")
+
+heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
+topfire.pa=1*(topfire>0)
+sum(rowSums(topfire.pa)==9)
+
+toprec=subsettop.f(rec.new,10, rdp.rec)
+heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
+#how many OTUs are de novo
+length(grep("dn",rownames(toprec)))
+
+
+setEPS()
+postscript("Fig7A.eps", width = 7, height=7, pointsize=10, paper="special")
+heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
+dev.off()
+
+setEPS()
+postscript("Fig7B.eps", width = 7, height=7, pointsize=10, paper="special")
+heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
+dev.off()
+#####
