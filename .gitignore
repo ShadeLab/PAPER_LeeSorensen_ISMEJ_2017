@@ -16,3 +16,7 @@ R_analysis/SloanNeutralModel.txt
 R_analysis/VennCounts.txt
 R_analysis/.RData
 R_analysis/.Rhistory
+R_analysis/SFig1.eps
+R_analysis/Top10.xlsx
+R_analysis/Phylum_ttest.txt
+R_analysis/AlphaDiv_TechnicalReps.txt

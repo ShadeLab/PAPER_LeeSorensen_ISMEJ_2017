@@ -109,6 +109,8 @@ rdp=comm[,"ConsensusLineage"]
 
 comm=comm[,-ncol(comm)]
 
+#How many total QCed sequences?
+sum(colSums(comm))
 
 #sort community by colnames (to be in the consistent, consecutive order for all analyses)
 comm=comm[,order(colnames(comm))]
@@ -116,9 +118,10 @@ comm=comm[,order(colnames(comm))]
 #who are the singleton OTUs (observed 1 time in an abundance of 1 sequence)?
 singletonOTUs=row.names(comm)[rowSums(comm)==1]
 length(singletonOTUs)
-#total 1396 singleton OTUs
+#total 1374 singleton OTUs
 g=grep("_dn", singletonOTUs)
-#1220 de novo OTUs are singletons
+length(g)
+#1201 de novo OTUs are singletons
 
 #who are the remaining de novo OTUs?
 g=grep("_dn_",row.names(comm))
@@ -131,6 +134,7 @@ comm.sigs=comm
 
 #remove OTUs with an abundance = 1, across the entire dataset (singleton OTUs)
 comm=comm[rowSums(comm)>1,]
+sum(colSums(comm))
 
 #transpose matrix
 comm.t=t(comm)
@@ -141,6 +145,13 @@ uf=read.table("weighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmC
 #sort by rows, columns (so they are in the consecutive order)
 uf=uf[order(row.names(uf)),order(colnames(uf))]
 uf.d=as.dist(uf)
+
+#read in the unweighted unifrac table
+uwuf=read.table("unweighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
+
+#sort by rows, columns (so they are in the consecutive order)
+uwuf=uwuf[order(row.names(uwuf)),order(colnames(uwuf))]
+uwuf.d=as.dist(uwuf)
 
 #assign fire classification
 fireclass=map[,"Classification"]
@@ -212,6 +223,18 @@ for(i in 1:length(v)){
 }
 outdiv
 
+#Supporting table - assessing reproducibility among technical replicates
+techdiv=read.table("OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000_alphadiv.txt")
+techdiv.out=NULL
+sampleIDs=c("C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18")
+for(i in 1:length(sampleIDs)){
+  temp=techdiv[grep(sampleIDs[i], row.names(techdiv)),]
+  temp2=c(mapply(mean,temp), mapply(sd,temp))
+  techdiv.out=rbind(techdiv.out,temp2)
+}
+row.names(techdiv.out)=sampleIDs
+colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
+#write.table(techdiv.out, "AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
 #########################
 ###Phylum-level responses  - FINISHED
@@ -235,7 +258,7 @@ comm.phylum=comm.phylum[rowSums(comm.phylum)>0.01,]
 #add the summary from the <0.01
 comm.phylum=rbind(comm.phylum,below01.cs)
 #rename the last row
-row.names(comm.phylum)[30]="Below_0.01"
+row.names(comm.phylum)[nrow(comm.phylum)]="Below_0.01"
 
 #for character string trucation in R : http://stackoverflow.com/questions/10883605/truncating-the-end-of-a-string-in-r-after-a-character-that-can-be-present-zero-o
 phylumnames=sub(".*p__", "", row.names(comm.phylum))
@@ -297,6 +320,7 @@ out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]>0,]
 #xtracted overrepresented in recovered
 out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]<0,]
 
+#write.table(out, "Phylum_ttest.txt",quote=FALSE, sep="\t")
 
 #heatmap of phylum-level responses, standardized (z-score) based on occurrences (oc) - across rows (gplots)
 #standardize responses
@@ -338,7 +362,7 @@ library(calibrate)
 library(ggplot2)
 library(vegan)
 
-# use weighted unifrac table (QIIME output)
+# use weighted unifrac (QIIME output -weighted phylogenetic)
 uf.pcoa=cmdscale(uf.d, eig=TRUE)
 #calculate percent variance explained, then add to plot
 ax1.v=uf.pcoa$eig[1]/sum(uf.pcoa$eig)
@@ -388,6 +412,28 @@ TukeyHSD(b, which = "group", ordered = FALSE,conf.level = 0.95)
 space=read.table("spatialdistancematrix.txt", header=TRUE, row.names=1)
 space.d=as.dist(space)
 mantel(uf.d,space.d)
+
+#Supporting analyses:  the variance explained by each distance (taxonomic/phylogenetic and weighted/unweighted)
+bc.d=vegdist(t(comm), method="bray")
+sor.d=vegdist(t(comm), method="bray",binary=TRUE)
+
+# PCoA using unweighted unifrac  (QIIME output - unweighted phylogenetic)
+uwuf.pcoa=cmdscale(uwuf.d, eig=TRUE)
+#calculate percent variance explained, then add to plot
+ax1.v.uwuf=uwuf.pcoa$eig[1]/sum(uwuf.pcoa$eig)
+ax2.v.uwuf=uwuf.pcoa$eig[2]/sum(uwuf.pcoa$eig)
+
+# PCoA using  bray-curtis  (vegan output - weighted taxonomic)
+bc.pcoa=cmdscale(bc.d, eig=TRUE)
+#calculate percent variance explained, then add to plot
+ax1.v.bc=bc.pcoa$eig[1]/sum(bc.pcoa$eig)
+ax2.v.bc=bc.pcoa$eig[2]/sum(bc.pcoa$eig)
+
+#PCoA using sorensen (vegan output - unweighted taxonomic)
+sor.pcoa=cmdscale(sor.d, eig=TRUE)
+#calculate percent variance explained, then add to plot
+ax1.v.sor=sor.pcoa$eig[1]/sum(sor.pcoa$eig)
+ax2.v.sor=sor.pcoa$eig[2]/sum(sor.pcoa$eig)
 
 #####################
 #constrained PCoA (CAP) _ FINISHED
@@ -444,10 +490,10 @@ plot(c.ef, p= 0.10)
 setEPS()
 postscript("SFig3AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
 par(mfrow=c(1,2))
-plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
+plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "(A) Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
 plot(envFIT.fire, p=0.10)
-plot(cap1, cex=0.9,main = "Temperature-constrained \nfire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
+plot(cap1, cex=0.9,main = "(B) Temperature-constrained \nfire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
 plot(c.ef, p= 0.10)
 dev.off()
 
@@ -617,6 +663,11 @@ which(row.names(comm)=="704748", arr.ind = FALSE)
 rdp.nosigs[138]
 which(row.names(comm)=="OTU_dn_34", arr.ind = FALSE)
 rdp.nosigs[41]
+########################################
+#Extract cumulative most abundant OTUs from fire-affected soils
+dim(fire)
+fire.ordered=fire[order(rowSums(fire),decreasing=TRUE),]
+perc=rowSums(fire.ordered)/sum(rowSums(fire.ordered))
 
 ##########################################
 #Analysis of the top 10 most prevalent taxa in fire-affected and recovered soils
@@ -728,4 +779,5 @@ setEPS()
 postscript("Fig7B.eps", width = 7, height=7, pointsize=10, paper="special")
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
-#####
+#############
+
