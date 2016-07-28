@@ -236,6 +236,44 @@ row.names(techdiv.out)=sampleIDs
 colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
 #write.table(techdiv.out, "AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
+#Supporting PCoA - assessing reproducibility among technical replicates
+beta <- read.table("weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
+
+map.f<- read.table("Centralia_Full_Map_Fixed.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
+beta <- beta[order(row.names(beta)),order(colnames(beta))]
+### Remove Mock
+beta <- beta[-55,-55]
+library(vegan)
+beta.pcoa<- cmdscale(beta, eig=TRUE)
+ax1.v.f=beta.pcoa$eig[1]/sum(beta.pcoa$eig)
+ax2.v.f=beta.pcoa$eig[2]/sum(beta.pcoa$eig)
+
+coordinates <- as.data.frame(beta.pcoa$points)
+Samples <- map$Sample
+coordinates$Sample<- map.f$Sample
+coordinates_avg_sd <- NULL
+for (i in 1:length(Samples)){
+  Site <- coordinates[coordinates$Sample==Samples[i],]
+  AX1 <- c(mean(Site[,1]),sd(Site[,1]))
+  AX2 <- c(mean(Site[,2]),sd(Site[,2]))
+  coordinates_avg_sd<- rbind(coordinates_avg_sd,c(AX1,AX2))
+  
+}
+row.names(coordinates_avg_sd)<-Samples
+
+unique(map$Classification)
+Class=rep('black',nrow(map))
+Class[map$Classification=="FireAffected"]='red'
+Class[map$Classification=="Reference"]='green'
+Class[map$Classification=="Recovered"]='yellow'
+
+
+plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
+library(calibrate)
+textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
+
+arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
+arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
 #########################
 ###Phylum-level responses  - FINISHED
 #load R libraries for this section
