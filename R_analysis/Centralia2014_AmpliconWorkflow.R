@@ -600,13 +600,13 @@ for(i in 1:length(l1)){
   #plot figure (SFig4)
   setEPS()
   if(i == 1){
-  postscript("SFig4A.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig5A.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i == 2){
-  postscript("SFig4B.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig5B.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==3){
-  postscript("SFig4C.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("SFig5C.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   
   plot(x=log(temp$p), y=temp$freq, main=names[i], xlab="Log Abundance", ylab="Occurrence Frequency")
