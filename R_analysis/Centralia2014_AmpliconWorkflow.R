@@ -267,13 +267,20 @@ Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
-
-plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 library(calibrate)
+plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
-
 arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
 arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
+dev.off()
+setEPS()
+postscript("SFig1.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
+plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
+textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
+arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
+arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
+dev.off()
+
 #########################
 ###Phylum-level responses  - FINISHED
 #load R libraries for this section
@@ -566,22 +573,14 @@ sta.fireT=sncm.fit(fire.t.sigs.NZ,taxon=rdp, stats=TRUE, pool=NULL)
 obs.recT=sncm.fit(rec.t.sigs.NZ,taxon=rdp, stats=FALSE, pool=NULL)
 sta.recT=sncm.fit(rec.t.sigs.NZ,taxon=rdp, stats=TRUE, pool=NULL)
 
-#Fire Affected (All Sites Pool) - asks the question:  are fire soils a neutral subset of the whole?
-obs.fireAP=sncm.fit(fire.t.sigs.NZ,taxon=rdp, stats=FALSE, pool=spp)
-sta.fireAP=sncm.fit(fire.t.sigs.NZ,taxon=rdp, stats=TRUE, pool=spp)
-
-# Recovered (All Sites Pool) asks the question:  are rec soils a neutral subset of the whole?
-obs.recAP=sncm.fit(rec.t.sigs.NZ,taxon=rdp, stats=FALSE, pool=spp)
-sta.recAP=sncm.fit(rec.t.sigs.NZ,taxon=rdp, stats=TRUE, pool=spp)
-
-results=rbind(sta.np, sta.fireT, sta.recT, sta.fireAP, sta.recAP)
-row.names(results)=c("all", "fire_total", "recovered_total","Fire_AllPool", "Recovered_AllPool")
+results=rbind(sta.np, sta.fireT, sta.recT)
+row.names(results)=c("all", "Fire_Affected", "Recovered")
 
 
 #par(mfrow=c(2,3)) #for plotting in R studio w/out export
-l1=list(obs.np, obs.recT, obs.fireT, obs.recAP, obs.fireAP)
-l2=list(sta.np, sta.recT, sta.fireT, sta.recAP, sta.fireAP)
-names=c("All", "Fire_Total", "Recovered_Total", "Recovered_AllPool", "FireAffected_AllPool")
+l1=list(obs.np, obs.recT, obs.fireT)
+l2=list(sta.np, sta.recT, sta.fireT)
+names=c("All", "Fire_Affected", "Recovered")
 out.sta=NULL
 
 for(i in 1:length(l1)){
@@ -609,13 +608,7 @@ for(i in 1:length(l1)){
   if (i ==3){
   postscript("SFig4C.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
-  if (i ==4){
-    postscript("SFig4D.eps", width = 2.33, height=3, pointsize=10,paper="special")
-  }
-  if (i ==5){
-    postscript("SFig4E.eps", width = 2.33, height=3, pointsize=10,paper="special")
-  }
-
+  
   plot(x=log(temp$p), y=temp$freq, main=names[i], xlab="Log Abundance", ylab="Occurrence Frequency")
   points(x=log(temp$p[ap==TRUE]), y=temp$freq[ap==TRUE], col="red", pch=19)
   points(x=log(temp$p[bp==TRUE]), y=temp$freq[bp==TRUE], col="blue", pch=19)
