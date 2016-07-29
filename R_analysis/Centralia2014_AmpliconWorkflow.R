@@ -580,7 +580,7 @@ row.names(results)=c("all", "Fire_Affected", "Recovered")
 #par(mfrow=c(2,3)) #for plotting in R studio w/out export
 l1=list(obs.np, obs.recT, obs.fireT)
 l2=list(sta.np, sta.recT, sta.fireT)
-names=c("(A) All", "(B) Fire_Affected", "(C) Recovered")
+names=c("(A) All", "(B) Recovered", "(C) Fire_Affected")
 out.sta=NULL
 
 for(i in 1:length(l1)){
