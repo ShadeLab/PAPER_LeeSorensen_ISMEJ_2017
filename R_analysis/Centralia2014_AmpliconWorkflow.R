@@ -266,7 +266,7 @@ Class=rep('black',nrow(map))
 Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
-par(mfrow=c(1,1))
+
 library(calibrate)
 plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
