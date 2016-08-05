@@ -800,15 +800,16 @@ heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none",
 #how many OTUs are de novo
 length(grep("dn",rownames(toprec)))
 
-
-setEPS()
-postscript("Fig7A.eps", width = 7, height=7, pointsize=10, paper="special")
-heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
-
 setEPS()
-postscript("Fig7B.eps", width = 7, height=7, pointsize=10, paper="special")
+postscript("Fig7)test.eps", width = 7, height=7, pointsize=10, paper="special")
+heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
-#############
+
+setEPS()
+postscript("Fig7B_2.eps", width = 3.5, height=7, pointsize=10, paper="special")
+heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
+dev.off()
+
 
