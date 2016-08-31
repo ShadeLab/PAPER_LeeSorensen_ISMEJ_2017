@@ -51,6 +51,7 @@ data.m<-read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_e
 
 rdp <- data.m[,19]
 data.m <- data.m[,-19]
+data.m.nosigs <- data.m[rowSums(data.m)>0,]
 ref.m<- rowSums(data.m[,map$Classification=="Reference"])
 rec.m <- rowSums(data.m[,map$Classification=="Recovered"])
 fa.m <- rowSums(data.m[,map$Classification=="FireAffected"])
