@@ -153,6 +153,13 @@ uwuf=read.table("unweighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp
 uwuf=uwuf[order(row.names(uwuf)),order(colnames(uwuf))]
 uwuf.d=as.dist(uwuf)
 
+#Read in Weighted Normalized UniFrac Table
+wnuf=read.table("weighted_normalized_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
+
+#sort by rows, columns (so they are in the consecutive order)
+wnuf=wnuf[order(row.names(wnuf)),order(colnames(wnuf))]
+wnuf.d=as.dist(wnuf)
+
 #assign fire classification
 fireclass=map[,"Classification"]
 
@@ -479,6 +486,15 @@ sor.pcoa=cmdscale(sor.d, eig=TRUE)
 #calculate percent variance explained, then add to plot
 ax1.v.sor=sor.pcoa$eig[1]/sum(sor.pcoa$eig)
 ax2.v.sor=sor.pcoa$eig[2]/sum(sor.pcoa$eig)
+
+# PCoA using weighted normalized unifrac  (QIIME output - weighted normalized phylogenetic)
+wnuf.pcoa=cmdscale(wnuf.d, eig=TRUE)
+#calculate percent variance explained, then add to plot
+ax1.v.wnuf=wnuf.pcoa$eig[1]/sum(wnuf.pcoa$eig)
+ax2.v.wnuf=wnuf.pcoa$eig[2]/sum(wnuf.pcoa$eig)
+
+plot(wnuf.pcoa$points[,1],wnuf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted Normalized UniFrac PCoA", xlab= paste("PCoA1: ",100*round(ax1.v.wnuf,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.wnuf,3),"%var. explained",sep=""))
+textxy(X=wnuf.pcoa$points[,1], Y=wnuf.pcoa$points[,2],labs=map$SampleID, cex=0.8)
 
 #####################
 #constrained PCoA (CAP) _ FINISHED
