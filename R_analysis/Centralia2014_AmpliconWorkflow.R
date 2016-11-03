@@ -19,7 +19,7 @@ library(reshape2)
 library(outliers)
 
 #read in mapping file with soil data
-map=read.table("Centralia_Collapsed_Map_forR.txt", header=TRUE, sep="\t")
+map=read.table("InputFiles/Centralia_Collapsed_Map_forR.txt", header=TRUE, sep="\t")
 
 #plot chemistry v. temperature (Figure 2)
 #melt data
@@ -49,7 +49,7 @@ fig2=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
   theme_bw(base_size=10)
 
 fig2
-ggsave("Fig2.eps", width=178, units="mm")
+ggsave("Figures/Fig2.eps", width=178, units="mm")
 
 ##Subset contextual data inclusive of soil quantitative variables
 env=map[,c("SoilTemperature_to10cm", "NO3N_ppm", "pH", "K_ppm", "Mg_ppm", "OrganicMatter_500", "NH4N_ppm", "SulfateSulfur_ppm", "Ca_ppm", "Fe_ppm", "As_ppm", "P_ppm", "SoilMoisture_Per","Fire_history")]
@@ -77,11 +77,11 @@ for(i in 1:ncol(env)){
 mean(env[map[,"Classification"]=="Reference","pH"])
 mean(env[map[,"Classification"]== "Recovered","pH"])
 
-#plot cell counts and 16S rRNA qPCR data (S Figure 1)
+#plot cell counts and 16S rRNA qPCR data (Supporting Figure 2)
 map.long.counts=melt(map, id.vars=c("SampleID", "Classification"), measure.vars=c("rRNA_gene_copies_per_g_dry_soil","CellCounts_per_g_dry_soil"))
 labels=c(rRNA_gene_copies_per_g_dry_soil="rRNA gene copies",CellCounts_per_g_dry_soil="Cell counts")
 
-sfig1 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
+sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   geom_boxplot() + 
   geom_jitter(aes(shape=Classification))+
   facet_grid(variable~., scales="free_y", labeller=labeller(variable = labels))+
@@ -90,9 +90,18 @@ sfig1 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   scale_x_discrete(name="Fire classification")+
   scale_y_continuous(name="value per g dry soil")+
   theme_bw(base_size=10)
-sfig1
-ggsave("SFig1.eps", width=86, units="mm")
+sfig2
+#ggsave("SFig2.eps", width=86, units="mm")
 
+#Pariwise t-tests for cell counts
+t.test(map[map[,"Classification"]=="Recovered","CellCounts_per_g_dry_soil"],map[map[,"Classification"]=="FireAffected","CellCounts_per_g_dry_soil"])
+t.test(map[map[,"Classification"]=="Recovered","CellCounts_per_g_dry_soil"],map[map[,"Classification"]=="Reference","CellCounts_per_g_dry_soil"])
+t.test(map[map[,"Classification"]=="FireAffected","CellCounts_per_g_dry_soil"],map[map[,"Classification"]=="Reference","CellCounts_per_g_dry_soil"])
+
+#Pairwise t-tests for qPCR
+t.test(map[map[,"Classification"]=="Recovered","rRNA_gene_copies_per_g_dry_soil"],map[map[,"Classification"]=="FireAffected","rRNA_gene_copies_per_g_dry_soil"])
+t.test(map[map[,"Classification"]=="Recovered","rRNA_gene_copies_per_g_dry_soil"],map[map[,"Classification"]=="Reference","rRNA_gene_copies_per_g_dry_soil"])
+t.test(map[map[,"Classification"]=="Reference","rRNA_gene_copies_per_g_dry_soil"],map[map[,"Classification"]=="FireAffected","rRNA_gene_copies_per_g_dry_soil"])
 
 #####################################################
 ###Preparing the OTU and distance tables for analysis - FINISHED
@@ -102,7 +111,7 @@ library(reshape2)
 library(vegan)
 
 #read in community OTU table, and transpose (rarefied collapsed MASTER table, output from QIIME)
-comm=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1, check.names=FALSE, sep="\t")
+comm=read.table("InputFiles/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1, check.names=FALSE, sep="\t")
 
 #remove consensus lineage from otu table
 rdp=comm[,"ConsensusLineage"]
@@ -139,26 +148,27 @@ sum(colSums(comm))
 #transpose matrix
 comm.t=t(comm)
 
+####Resemblence matrices
 #read in weighted unifrac table
-uf=read.table("weighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
+uf=read.table("InputFiles/weighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
 
 #sort by rows, columns (so they are in the consecutive order)
 uf=uf[order(row.names(uf)),order(colnames(uf))]
 uf.d=as.dist(uf)
 
 #read in the unweighted unifrac table
-uwuf=read.table("unweighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
+uwuf=read.table("InputFiles/unweighted_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
 
 #sort by rows, columns (so they are in the consecutive order)
 uwuf=uwuf[order(row.names(uwuf)),order(colnames(uwuf))]
 uwuf.d=as.dist(uwuf)
 
-#Read in Weighted Normalized UniFrac Table
-wnuf=read.table("weighted_normalized_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
+#read in the nomralized weighted unifrac table
+nwuf=read.table("InputFiles/weighted_normalized_unifrac_MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.txt", header=TRUE, row.names=1)
 
 #sort by rows, columns (so they are in the consecutive order)
-wnuf=wnuf[order(row.names(wnuf)),order(colnames(wnuf))]
-wnuf.d=as.dist(wnuf)
+nwuf=nwuf[order(row.names(nwuf)),order(colnames(nwuf))]
+nwuf.d=as.dist(nwuf)
 
 #assign fire classification
 fireclass=map[,"Classification"]
@@ -170,7 +180,7 @@ fire.t=comm.t[map$Classification=="FireAffected",]
 ####################
 ###Calculate and plot alpha diversity - FINISHED
 #read in alpha diversity table (output from QIIME)
-div=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt", header=TRUE)
+div=read.table("InputFiles/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt", header=TRUE)
 
 #sort by sample ID (so that they are in consecutive order)
 div=div[order(row.names(div)),]
@@ -195,18 +205,18 @@ colors=c("red", "yellow", "green")
 
 fig3 <- ggplot(data=div.long, aes(x=Classification, y=value))+
   geom_boxplot() + 
-  geom_jitter()+
+  #geom_jitter()+
   #geom_jitter(aes(shape=Classification))+
-  #geom_jitter(aes(color=Classification, cex=2))+
-  facet_grid(variable~., scales="free_y")+
+  geom_jitter(aes(color=Classification, cex=1.5))+
+  facet_grid(.~variable, scales="free_y")+
   #scale_shape(guide=FALSE)+
   scale_size(guide=FALSE)+
-  #scale_color_manual(values=colors)+
+  scale_color_manual(values=colors)+
   scale_x_discrete(name="Fire classification")+
   scale_y_continuous(name="Diversity value")+
   theme_bw(base_size=10)
 fig3
-ggsave("Fig3.eps", width=86, units="mm")
+ggsave("Figures/Fig3.eps", width=86, units="mm")
 
 #ttest
 v=c("PD", "Richness", "Pielou")
@@ -231,7 +241,7 @@ for(i in 1:length(v)){
 outdiv
 
 #Supporting table - assessing reproducibility among technical replicates
-techdiv=read.table("OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000_alphadiv.txt")
+techdiv=read.table("InputFiles/OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000_alphadiv.txt")
 techdiv.out=NULL
 sampleIDs=c("C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18")
 for(i in 1:length(sampleIDs)){
@@ -244,9 +254,9 @@ colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
 #write.table(techdiv.out, "AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
 #Supporting PCoA - assessing reproducibility among technical replicates
-beta <- read.table("weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
+beta <- read.table("InputFiles/weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
 
-map.f<- read.table("Centralia_Full_Map_Fixed.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
+map.f<- read.table("InputFiles/Centralia_Full_Map.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
 beta <- beta[order(row.names(beta)),order(colnames(beta))]
 ### Remove Mock
 beta <- beta[-55,-55]
@@ -281,7 +291,7 @@ arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], c
 arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
 dev.off()
 setEPS()
-postscript("SFig1.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+postscript("Figures/SFig1.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
 plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Averaged Technical Replicates Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
 arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
@@ -296,7 +306,7 @@ library(ggplot2)
 
 
 #read in phylum level OTU table (QIIME output)
-comm.phylum=read.table("MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt", sep="\t", header=TRUE, row.names=1)
+comm.phylum=read.table("InputFiles/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt", sep="\t", header=TRUE, row.names=1)
 
 ##sort by sample ID (so that they are in consecutive order)
 comm.phylum=comm.phylum[,order(colnames(comm.phylum))]
@@ -345,7 +355,7 @@ fig5=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
   labs(x="Phylum", y="Mean relative abundance", las=1)+
   theme(axis.text.x = element_text(angle = 90, size = 10, face = "italic"))
 fig5
-ggsave("Fig5.eps", width=178, units="mm")
+ggsave("Figures/Fig5.eps", width=178, units="mm")
 
 #Welch's t-test for all phyla (Supporting Table X)
 u=row.names(comm.phylum)
@@ -392,7 +402,7 @@ comm.phylum.oc=as.matrix(comm.phylum.oc)
 #dev.off()
 #178 mm is 7 inches
 #setEPS()
-#postscript("Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
+#postscript("Figures/Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
 #fig5B<-heatmap.2(comm.phylum.oc,
 #            col=hc(100),
 #            scale="row",
@@ -442,7 +452,7 @@ plot(envEF, p.max=0.10, col="black")
 #export figure 4
 dev.off()
 setEPS()
-postscript("Fig4.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
+postscript("Figures/Fig4.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
 plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA", xlab= paste("PCoA1: ",100*round(ax1.v,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v,3),"%var. explained",sep=""))
 textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=0.8)
 legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
@@ -461,7 +471,7 @@ b=betadisper(uf.d, group=Class2)
 TukeyHSD(b, which = "group", ordered = FALSE,conf.level = 0.95)
 
 #mantel w/ spatial distances
-space=read.table("spatialdistancematrix.txt", header=TRUE, row.names=1)
+space=read.table("InputFiles/spatialdistancematrix.txt", header=TRUE, row.names=1)
 space.d=as.dist(space)
 mantel(uf.d,space.d)
 
@@ -486,15 +496,6 @@ sor.pcoa=cmdscale(sor.d, eig=TRUE)
 #calculate percent variance explained, then add to plot
 ax1.v.sor=sor.pcoa$eig[1]/sum(sor.pcoa$eig)
 ax2.v.sor=sor.pcoa$eig[2]/sum(sor.pcoa$eig)
-
-# PCoA using weighted normalized unifrac  (QIIME output - weighted normalized phylogenetic)
-wnuf.pcoa=cmdscale(wnuf.d, eig=TRUE)
-#calculate percent variance explained, then add to plot
-ax1.v.wnuf=wnuf.pcoa$eig[1]/sum(wnuf.pcoa$eig)
-ax2.v.wnuf=wnuf.pcoa$eig[2]/sum(wnuf.pcoa$eig)
-
-plot(wnuf.pcoa$points[,1],wnuf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted Normalized UniFrac PCoA", xlab= paste("PCoA1: ",100*round(ax1.v.wnuf,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.wnuf,3),"%var. explained",sep=""))
-textxy(X=wnuf.pcoa$points[,1], Y=wnuf.pcoa$points[,2],labs=map$SampleID, cex=0.8)
 
 #####################
 #constrained PCoA (CAP) _ FINISHED
@@ -549,7 +550,7 @@ plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xl
 plot(c.ef, p= 0.10)
 
 setEPS()
-postscript("SFig3AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+postscript("Figures/SFig3AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
 par(mfrow=c(1,2))
 plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "(A) Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
@@ -639,77 +640,77 @@ for(i in 1:length(l1)){
 
 colnames(out.sta)=c("%AbovePred", "%BelowPred")
 results=cbind(results, out.sta)
-write.table(results, "SloanNeutralModel.txt", quote=FALSE, sep="\t")
+#write.table(results, "SloanNeutralModel.txt", quote=FALSE, sep="\t")
 
 
 ###########################
-###Venn analysis - FINISHED
+###Venn analysis - not included in final ms
 #Limma must be installed from bioconductor using the commands below
 #source("http://bioconductor.org/biocLite.R")
 #biocLite("limma")
-library(limma)
-
-#make a binary OTU table for each fire classification
-fireclass=map[,"Classification"]
-
-active.pa=1*(comm[,fireclass=="FireAffected"]>0)
-recov.pa=1*(comm[,fireclass=="Recovered"]>0)
-ref.pa=1*(comm[,fireclass=="Reference"]>0)
-
-#summarize and combine
-venndata=cbind(1*rowSums(active.pa>0),1*rowSums(recov.pa>0),1*rowSums(ref.pa>0))
-colnames(venndata)=c("Fire-affected", "Recovered", "Reference")
-
-#apply venn analysis
-v=vennCounts(venndata)
-v2=round(v[,"Counts"]/sum(v[,"Counts"]),2)
-v[,"Counts"]<-v2
-vennDiagram(v)
-
-
-#Write out the results of venncounts
-write.table(v, "VennCounts.txt", quote=FALSE, sep="\t")
-par(mfrow=c(1,1))
-setEPS()
-
-postscript("Fig6.eps", width = 2.33, height=2.33, pointsize=8,paper="special")
-par(mar=c(5,3,2,2)+0.1)
-fig6=vennDiagram(v)
-dev.off()
+# library(limma)
+# 
+# #make a binary OTU table for each fire classification
+# fireclass=map[,"Classification"]
+# 
+# active.pa=1*(comm[,fireclass=="FireAffected"]>0)
+# recov.pa=1*(comm[,fireclass=="Recovered"]>0)
+# ref.pa=1*(comm[,fireclass=="Reference"]>0)
+# 
+# #summarize and combine
+# venndata=cbind(1*rowSums(active.pa>0),1*rowSums(recov.pa>0),1*rowSums(ref.pa>0))
+# colnames(venndata)=c("Fire-affected", "Recovered", "Reference")
+# 
+# #apply venn analysis
+# v=vennCounts(venndata)
+# v2=round(v[,"Counts"]/sum(v[,"Counts"]),2)
+# v[,"Counts"]<-v2
+# vennDiagram(v)
+# 
+# 
+# #Write out the results of venncounts
+# write.table(v, "VennCounts.txt", quote=FALSE, sep="\t")
+# par(mfrow=c(1,1))
+# setEPS()
+# 
+# postscript("Figures/Venn.eps", width = 2.33, height=2.33, pointsize=8,paper="special")
+# par(mar=c(5,3,2,2)+0.1)
+# fig6=vennDiagram(v)
+# dev.off()
 
 
 #############################
-###Indicator species analysis
+###Indicator species analysis - not included in the final manuscript
 # resource:  https://cran.r-project.org/web/packages/indicspecies/vignettes/indicspeciesTutorial.pdf
-library(indicspecies)
-
-comm.t=as.data.frame(t(comm))
-class=as.vector(map$Classification)
-ind=multipatt(comm.t, class, control=how(nperm=999), duleg = TRUE, func="IndVal.g")
-summary(ind, alpha=0.001, indvalcomp=TRUE, At=0.95, Bt=0.95)
-
-
-#taxonomic affiliations of the OTUs that are indicators of fire-affected soils (A and B > 0.95, p = 0.001)
-rdp.nosigs[row.names(comm)=="OTU_dn_34"]
-rdp.nosigs[row.names(comm)=="OTU_dn_2"]
-rdp.nosigs[row.names(comm)=="OTU_dn_125"]
-rdp.nosigs[row.names(comm)=="704748"]
-rdp.nosigs[row.names(comm)=="240440"]
-rdp.nosigs[row.names(comm)=="25116"]
-
-#taxonomic affiliations of the top OTUs that are indicators of recovered soils (A and B = 1, p = 0.001)
-rdp.nosigs[row.names(comm)=="OTU_dn_5462"]
-rdp.nosigs[row.names(comm)=="511701"]
-rdp.nosigs[row.names(comm)=="OTU_dn_3443"]
-rdp.nosigs[row.names(comm)=="OTU_dn_1439"]
-rdp.nosigs[row.names(comm)=="OTU_dn_2728"]
-rdp.nosigs[row.names(comm)=="OTU_dn_14082"]
-
-#example to extract RDP taxonomy assignment
-which(row.names(comm)=="704748", arr.ind = FALSE)
-rdp.nosigs[138]
-which(row.names(comm)=="OTU_dn_34", arr.ind = FALSE)
-rdp.nosigs[41]
+# library(indicspecies)
+# 
+# comm.t=as.data.frame(t(comm))
+# class=as.vector(map$Classification)
+# ind=multipatt(comm.t, class, control=how(nperm=999), duleg = TRUE, func="IndVal.g")
+# summary(ind, alpha=0.001, indvalcomp=TRUE, At=0.95, Bt=0.95)
+# 
+# 
+# #taxonomic affiliations of the OTUs that are indicators of fire-affected soils (A and B > 0.95, p = 0.001)
+# rdp.nosigs[row.names(comm)=="OTU_dn_34"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_2"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_125"]
+# rdp.nosigs[row.names(comm)=="704748"]
+# rdp.nosigs[row.names(comm)=="240440"]
+# rdp.nosigs[row.names(comm)=="25116"]
+# 
+# #taxonomic affiliations of the top OTUs that are indicators of recovered soils (A and B = 1, p = 0.001)
+# rdp.nosigs[row.names(comm)=="OTU_dn_5462"]
+# rdp.nosigs[row.names(comm)=="511701"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_3443"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_1439"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_2728"]
+# rdp.nosigs[row.names(comm)=="OTU_dn_14082"]
+# 
+# #example to extract RDP taxonomy assignment
+# which(row.names(comm)=="704748", arr.ind = FALSE)
+# rdp.nosigs[138]
+# which(row.names(comm)=="OTU_dn_34", arr.ind = FALSE)
+# rdp.nosigs[41]
 ########################################
 #Extract cumulative most abundant OTUs from fire-affected soils
 dim(fire)
@@ -818,7 +819,7 @@ length(grep("dn",rownames(toprec)))
 
 dev.off()
 setEPS()
-postscript("Fig7)test.eps", width = 7, height=7, pointsize=10, paper="special")
+postscript("Figures/Fig7_test.eps", width = 7, height=7, pointsize=10, paper="special")
 heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
@@ -828,4 +829,162 @@ postscript("Fig7B_2.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
 
+###Beta null models
+#MODIFIED to use our dataset (comm.t) instead of "dune" and to only include the abundance-based model. We also changed the number of patches to by 18 to match with the dataset.
+#ORIGINAL scripts available in the appendix of the work below, published in Oikos (Appendix oik.02803)
+#Note that beta null models may require ~24 hours to complete
+#######################
+### Code for example metacommunity simulation and beta-null deviation calculations
+### with "Differentiating between niche and neutral assembly in metacommunities using
+### null models of beta-diversity"
+### Prepared May 14, 2014 
+### Authors Caroline Tucker, Lauren Shoemaker, Brett Melbourne
+#######################
+
+## Load required source files and libraries
+library(reldist)
+library(vegan)
+library(bipartite)
+source("oik-02803-appendix-to-Tucker2016/MetacommunityDynamicsFctsOikos.R")
+source("oik-02803-appendix-to-Tucker2016/PANullDevFctsOikos.R")
+
+### Prepare and calculate abundance beta-null deviation metric
+## Adjusted from Stegen et al 2012 GEB
+bbs.sp.site <- comm.t
+patches=nrow(bbs.sp.site)
+rand <- 999
+null.alphas <- matrix(NA, ncol(comm.t), rand)
+null.alpha <- matrix(NA, ncol(comm.t), rand)
+expected_beta <- matrix(NA, 1, rand)
+null.gamma <- matrix(NA, 1, rand)
+null.alpha.comp <- numeric()
+bucket_bray_res <- matrix(NA, patches, rand)
+
+bbs.sp.site = ceiling(bbs.sp.site/max(bbs.sp.site)) 
+mean.alpha = sum(bbs.sp.site)/nrow(bbs.sp.site) #mean.alpha
+gamma <- ncol(bbs.sp.site) #gamma
+obs_beta <- 1-mean.alpha/gamma
+obs_beta_all <- 1-rowSums(bbs.sp.site)/gamma
+
+##Generate null patches
+for (randomize in 1:rand) {  
+  null.dist = comm.t
+  for (species in 1:ncol(null.dist)) {
+    tot.abund = sum(null.dist[,species])
+    null.dist[,species] = 0
+    for (individual in 1:tot.abund) {
+      sampled.site = sample(c(1:nrow(bbs.sp.site)), 1)
+      null.dist[sampled.site, species] = null.dist[sampled.site, species] + 1
+    }
+  }
+  
+  ##Calculate null deviation for null patches and store
+  null.alphas[,randomize] <- apply(null.dist, 2, function(x){sum(ifelse(x > 0, 1, 0))})
+  null.gamma[1, randomize] <- sum(ifelse(rowSums(null.dist)>0, 1, 0))
+  expected_beta[1, randomize] <- 1 - mean(null.alphas[,randomize]/null.gamma[,randomize])
+  null.alpha <- mean(null.alphas[,randomize])
+  null.alpha.comp <- c(null.alpha.comp, null.alpha)
+  
+  bucket_bray <- as.matrix(vegdist(null.dist, "bray"))
+  diag(bucket_bray) <- NA
+  bucket_bray_res[,randomize] <- apply(bucket_bray, 2, FUN="mean", na.rm=TRUE)
+  
+} ## end randomize loop
+
+## Calculate beta-diversity for obs metacommunity
+beta_comm_abund <- vegdist(comm.t, "bray")
+res_beta_comm_abund <- as.matrix(as.dist(beta_comm_abund))
+diag(res_beta_comm_abund) <- NA
+# output beta diversity (Bray)
+beta_div_abund_stoch <- apply(res_beta_comm_abund, 2, FUN="mean", na.rm=TRUE)
+
+# output abundance beta-null deviation
+abund_null_dev <- beta_div_abund_stoch - mean(bucket_bray_res)
+
+
+### Outputs:
+
+#beta_div_stoch  - Jaccard beta-diversity for the metacommunity, average value (of all pairwise comparisons) for each patch
+#beta_div_abund_stoch - Bray-Curtis beta-diversity for the metacommunity, average value (of all pairwise comparisons) for each patch
+#PA_null_dev - presence-absence null deviation values or the metacommunity, average value (of all pairwise comparisons) for each patch
+#abund_null_dev - abundance null deviation values or the metacommunity, average value (of all pairwise comparisons) for each patch
+###
+#END script by Tucker et al.
+#######################
+
+#plotting and statistical tests
+betanull.out=data.frame(I(beta_div_abund_stoch),I(abund_null_dev), I(map[,"SampleID"]),as.character(map[,"Classification"]), as.numeric(map[,"SoilTemperature_to10cm"]), stringsAsFactors=FALSE)
+colnames(betanull.out)=c("beta_div_abund_stoch", "AbundanceNullDeviation", "SampleID","Classification", "SoilTemperature_to10cm")
+
+#plottingorder orders samples along a chronosequence and disturbance intensity gradient, by 1) reference samples, 2) fire-affected, sites ranked from hottest to coolest soil temperatures; and 3) recovered sites ranked from hottest to coolest soil temepratures
+plottingorder=c(13,15,12,17,14,9,16,1,6,4,11,8,3,7,5,10,2,18)
+
+library("reshape2")
+bnull.long=melt(betanull.out, id.vars=c("SampleID", "Classification","SoilTemperature_to10cm"), measure.vars=c("AbundanceNullDeviation"), col=)
+
+GnYlOrRd=colorRampPalette(colors=c("green", "yellow", "orange","red"), bias=2)
+
+figX <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
+  geom_boxplot()+ 
+  #geom_jitter(aes(color=Classification, y=as.numeric(value),cex=1))+
+  geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value),cex=1))+
+  scale_size(guide=FALSE)+
+  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
+  scale_x_discrete(name="Fire classification", limits=c("Reference", "FireAffected", "Recovered"))+
+  scale_y_continuous(name="Abundance Null Deviation")+
+  theme_bw(base_size=10)
+figX
+#ggsave("Figures/FigX.eps", width=86, units="mm")
+
+figY <- ggplot(data=bnull.long, aes(x=plottingorder, y=as.numeric(value)))+
+  geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value),cex=1))+
+  scale_size(guide=FALSE)+
+  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
+  scale_x_continuous(name="Disturbance Intensity", breaks=c(1.5,7,15), labels=c("Ref", "FireAffected", "Recovered"))+
+  scale_y_continuous(name="Abundance Null Deviation")+
+  geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
+  theme_bw(base_size=10)+
+  theme(legend.position="none")
+figY
+
+#Multiplot script written by Winston Chang
+load("multiplot.R")
+multiplot(figX, figY, cols=1)
+
+#Pairwise t-tests for Beta Null
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="Reference","AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Reference","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","AbundanceNullDeviation"])
+#recovered and fire-affected are statistically distinct, p < 0.0006, all other comparisons p > 0.05
+
+#####################
+####Mantel and PROTEST tests between all resemblences (Supporting Table 3)
+resem=list(uf.d,uwuf.d,nwuf.d,bc.d,sor.d)
+#this loops a bit funny but all pairwise results are available
+names=c("weighted_UniFrac", "unweighted_UniFrac", "normalized_weighted_UniFrac", "BrayCurtis", "Sorenson")
+m.out=NULL
+for (i in 1:length(resem)){
+  dist1=resem[[i]]
+  print(i)
+  
+  j=i+1
+  
+  for(j in 2:length(resem)){
+  dist2=resem[[j]]
+  print(j)
+  
+  #Mantel
+  m=mantel(dist1,dist2)
+
+  #Protest
+  pr=protest(dist1,dist2)
+  
+  #results out
+  m.v=c(names[i], names[j],m$statistic, m$signif, pr$t0, pr$ss, pr$signif)  
+  m.out=rbind(m.out,m.v)
+  }
+}
+
+colnames(m.out)=c("Dist1", "Dist2", "Mantel_R", "Mantel_p", "PROTEST_R", "PROTEST_m12", "PROTEST_p")
+write.table(m.out, "MantelDist.txt", quote=FALSE, sep="\t")
 
