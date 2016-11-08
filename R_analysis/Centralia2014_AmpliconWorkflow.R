@@ -1,6 +1,14 @@
+#######################
+### Code for ecological statistics
+### "Divergent extremes but convergent recovery of bacterial and archaeal soil 
+###  communities to an ongoing subterranean coal mine fire"
+### Prepared  07 November 2016
+### Author Ashley Shade, Michigan State University; shade.ashley <at> gmail.com
+#######################
+#
 #Before you start
 # Make sure you are using the latest version of R (and Rstudio)
-#The following packages needed to run the whole script
+#The following packages (and their dependencies) needed to run the whole analysis
 # calibrate 1.7.2
 # gplots 3.0.1
 # ggplot2 2.1.0
@@ -10,6 +18,11 @@
 # outliers 0.14
 # reshape2 1.4.1
 # vegan 2.4-0
+# reldist 1.6-6
+# bipartite 2.06.1
+# GUniFrac 1.0
+# ape 3.5
+# phangorn 2.0-2
 
 ################################
 ###Plotting soil contextual data - FINISHED
@@ -49,7 +62,7 @@ fig2=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
   theme_bw(base_size=10)
 
 fig2
-ggsave("Figures/Fig2.eps", width=178, units="mm")
+#ggsave("Figures/Fig2.eps", width=178, units="mm")
 
 ##Subset contextual data inclusive of soil quantitative variables
 env=map[,c("SoilTemperature_to10cm", "NO3N_ppm", "pH", "K_ppm", "Mg_ppm", "OrganicMatter_500", "NH4N_ppm", "SulfateSulfur_ppm", "Ca_ppm", "Fe_ppm", "As_ppm", "P_ppm", "SoilMoisture_Per","Fire_history")]
@@ -91,7 +104,7 @@ sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   scale_y_continuous(name="value per g dry soil")+
   theme_bw(base_size=10)
 sfig2
-#ggsave("SFig2.eps", width=86, units="mm")
+#ggsave("Figures/SFig2.eps", width=86, units="mm")
 
 #Pariwise t-tests for cell counts
 t.test(map[map[,"Classification"]=="Recovered","CellCounts_per_g_dry_soil"],map[map[,"Classification"]=="FireAffected","CellCounts_per_g_dry_soil"])
@@ -216,7 +229,7 @@ fig3 <- ggplot(data=div.long, aes(x=Classification, y=value))+
   scale_y_continuous(name="Diversity value")+
   theme_bw(base_size=10)
 fig3
-ggsave("Figures/Fig3.eps", width=86, units="mm")
+#ggsave("Figures/Fig3.eps", width=86, units="mm")
 
 #ttest
 v=c("PD", "Richness", "Pielou")
@@ -251,7 +264,7 @@ for(i in 1:length(sampleIDs)){
 }
 row.names(techdiv.out)=sampleIDs
 colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
-#write.table(techdiv.out, "AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
+#write.table(techdiv.out, "Results/AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
 #Supporting PCoA - assessing reproducibility among technical replicates
 beta <- read.table("InputFiles/weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
@@ -289,6 +302,7 @@ plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
 arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
 arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
+
 dev.off()
 setEPS()
 postscript("Figures/SFig1.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
@@ -355,7 +369,7 @@ fig5=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
   labs(x="Phylum", y="Mean relative abundance", las=1)+
   theme(axis.text.x = element_text(angle = 90, size = 10, face = "italic"))
 fig5
-ggsave("Figures/Fig5.eps", width=178, units="mm")
+#ggsave("Figures/Fig5.eps", width=178, units="mm")
 
 #Welch's t-test for all phyla (Supporting Table X)
 u=row.names(comm.phylum)
@@ -403,7 +417,7 @@ comm.phylum.oc=as.matrix(comm.phylum.oc)
 #178 mm is 7 inches
 #setEPS()
 #postscript("Figures/Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
-#fig5B<-heatmap.2(comm.phylum.oc,
+#fig<-heatmap.2(comm.phylum.oc,
 #            col=hc(100),
 #            scale="row",
 #            key=TRUE,
@@ -829,10 +843,12 @@ postscript("Fig7B_2.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
 
+
 ###Beta null models
 #MODIFIED to use our dataset (comm.t) instead of "dune" and to only include the abundance-based model. We also changed the number of patches to by 18 to match with the dataset.
-#ORIGINAL scripts available in the appendix of the work below, published in Oikos (Appendix oik.02803)
-#Note that beta null models may require ~24 hours to complete
+#ORIGINAL scripts available in the appendix of the work below, published in Oikos (Appendix oik.02803, also R_analysis/oik-02803-appendix-to-Tucker2016/)
+#Note that beta null models with weighted UniFrac require ~75 hours walltime to complete with 4Gb memory and 1 processing node; beta-null models with Bray-Curtis only require ~30 hours
+
 #######################
 ### Code for example metacommunity simulation and beta-null deviation calculations
 ### with "Differentiating between niche and neutral assembly in metacommunities using
@@ -848,17 +864,36 @@ library(bipartite)
 source("oik-02803-appendix-to-Tucker2016/MetacommunityDynamicsFctsOikos.R")
 source("oik-02803-appendix-to-Tucker2016/PANullDevFctsOikos.R")
 
+##packages for UniFrac Null Model (weighted)
+library(GUniFrac)
+library(ape)
+library(phangorn)
+tree <- read.tree("MASTER_RepSeqs_aligned_clean.tre")
+is.rooted(tree)
+
+#https://github.com/joey711/phyloseq/issues/235
+#FastUniFrac trees are unrooted; calculation is done using mid-point root.
+tree <- midpoint(tree)
+is.rooted(tree)
+
+#formatting problem with tree tip labels - for some reason tree dn OTUs have extra quotes around them and this needs to be removed
+tree$tip.label=gsub("'","", tree$tip.label)
+
+
 ### Prepare and calculate abundance beta-null deviation metric
 ## Adjusted from Stegen et al 2012 GEB
 bbs.sp.site <- comm.t
 patches=nrow(bbs.sp.site)
 rand <- 999
+
+#note - two randomization runs in < 8 min on my laptop 
 null.alphas <- matrix(NA, ncol(comm.t), rand)
 null.alpha <- matrix(NA, ncol(comm.t), rand)
 expected_beta <- matrix(NA, 1, rand)
 null.gamma <- matrix(NA, 1, rand)
 null.alpha.comp <- numeric()
 bucket_bray_res <- matrix(NA, patches, rand)
+bucket_wuf_res <- matrix(NA, patches, rand) #als add
 
 bbs.sp.site = ceiling(bbs.sp.site/max(bbs.sp.site)) 
 mean.alpha = sum(bbs.sp.site)/nrow(bbs.sp.site) #mean.alpha
@@ -886,20 +921,30 @@ for (randomize in 1:rand) {
   null.alpha.comp <- c(null.alpha.comp, null.alpha)
   
   bucket_bray <- as.matrix(vegdist(null.dist, "bray"))
+  wuf<-(GUniFrac(null.dist, tree, alpha=1)) #als add
+  #wuf<-(GUniFrac(comm.t, tree, alpha=1)) #als add test that comparable  values are calculated as with QIIME
+  bucket_wuf <- as.matrix(wuf$unifracs[,,"d_1"]) #als add
   diag(bucket_bray) <- NA
+  diag(bucket_wuf) <- NA #als add
   bucket_bray_res[,randomize] <- apply(bucket_bray, 2, FUN="mean", na.rm=TRUE)
-  
+  bucket_wuf_res[,randomize] <- apply(bucket_wuf, 2, FUN="mean", na.rm=TRUE) #als add
 } ## end randomize loop
 
 ## Calculate beta-diversity for obs metacommunity
 beta_comm_abund <- vegdist(comm.t, "bray")
+wuf_comm_abund <- GUniFrac(comm.t, tree, alpha=1) #als add
 res_beta_comm_abund <- as.matrix(as.dist(beta_comm_abund))
+res_wuf_comm_abund <- as.matrix(as.dist(wuf_comm_abund$unifracs[,,"d_1"])) #als add
 diag(res_beta_comm_abund) <- NA
+diag(res_wuf_comm_abund) <- NA #als add
+
 # output beta diversity (Bray)
 beta_div_abund_stoch <- apply(res_beta_comm_abund, 2, FUN="mean", na.rm=TRUE)
+wuf_div_abund_stoch <- apply(res_wuf_comm_abund, 2, FUN="mean", na.rm=TRUE) #als add
 
 # output abundance beta-null deviation
-abund_null_dev <- beta_div_abund_stoch - mean(bucket_bray_res)
+bray_abund_null_dev <- beta_div_abund_stoch - mean(bucket_bray_res)
+wuf_abund_null_dev <- wuf_div_abund_stoch - mean(bucket_wuf_res) #als add
 
 
 ### Outputs:
@@ -913,31 +958,45 @@ abund_null_dev <- beta_div_abund_stoch - mean(bucket_bray_res)
 #######################
 
 #plotting and statistical tests
-betanull.out=data.frame(I(beta_div_abund_stoch),I(abund_null_dev), I(map[,"SampleID"]),as.character(map[,"Classification"]), as.numeric(map[,"SoilTemperature_to10cm"]), stringsAsFactors=FALSE)
-colnames(betanull.out)=c("beta_div_abund_stoch", "AbundanceNullDeviation", "SampleID","Classification", "SoilTemperature_to10cm")
+betanull.out=data.frame(I(beta_div_abund_stoch),I(bray_abund_null_dev),I(wuf_div_abund_stoch),I(wuf_abund_null_dev),I(map[,"SampleID"]),as.character(map[,"Classification"]), as.numeric(map[,"SoilTemperature_to10cm"]), stringsAsFactors=FALSE)
+colnames(betanull.out)=c("BRAY_beta_div_abund_stoch", "BRAY_AbundanceNullDeviation", "WUF_div_abund_stoch","WUF_AbundanceNullDeviation","SampleID","Classification", "SoilTemperature_to10cm")
+#write.table(betanull.out, "Results/bnullout_r1.txt", quote=FALSE, sep="\t")
+
+#betanull.out=read.table("Results/bnullout_r1.txt", header=TRUE, sep="\t")
 
 #plottingorder orders samples along a chronosequence and disturbance intensity gradient, by 1) reference samples, 2) fire-affected, sites ranked from hottest to coolest soil temperatures; and 3) recovered sites ranked from hottest to coolest soil temepratures
 plottingorder=c(13,15,12,17,14,9,16,1,6,4,11,8,3,7,5,10,2,18)
 
 library("reshape2")
-bnull.long=melt(betanull.out, id.vars=c("SampleID", "Classification","SoilTemperature_to10cm"), measure.vars=c("AbundanceNullDeviation"), col=)
+bnull.long=melt(betanull.out, id.vars=c("SampleID", "Classification","SoilTemperature_to10cm"), measure.vars=c("BRAY_AbundanceNullDeviation", "WUF_AbundanceNullDeviation"), col=)
 
 GnYlOrRd=colorRampPalette(colors=c("green", "yellow", "orange","red"), bias=2)
 
 figX <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
   geom_boxplot()+ 
-  #geom_jitter(aes(color=Classification, y=as.numeric(value),cex=1))+
-  geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value),cex=1))+
+  geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
+  facet_grid(variable~., scales="free_y")+
   scale_size(guide=FALSE)+
-  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
+  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temp"))+
   scale_x_discrete(name="Fire classification", limits=c("Reference", "FireAffected", "Recovered"))+
   scale_y_continuous(name="Abundance Null Deviation")+
   theme_bw(base_size=10)
 figX
-#ggsave("Figures/FigX.eps", width=86, units="mm")
 
-figY <- ggplot(data=bnull.long, aes(x=plottingorder, y=as.numeric(value)))+
-  geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value),cex=1))+
+figX2 <- ggplot(data=bnull.long, aes(x=variable, y=as.numeric(value)))+
+  geom_boxplot()+ 
+  geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
+  facet_grid(Classification~., scales="free_y")+
+  scale_size(guide=FALSE)+
+  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
+  scale_x_discrete(name="Beta-null Resemblence", labels=c("Bray-Curtis", "Weighted UniFrac"))+
+  scale_y_continuous(name="Abundance Null Deviation")+
+  theme_bw(base_size=10)
+figX2
+
+bnull.long.bray=bnull.long[bnull.long[,"variable"]=="BRAY_AbundanceNullDeviation",]
+figY <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
+  geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   scale_size(guide=FALSE)+
   scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
   scale_x_continuous(name="Disturbance Intensity", breaks=c(1.5,7,15), labels=c("Ref", "FireAffected", "Recovered"))+
@@ -947,15 +1006,45 @@ figY <- ggplot(data=bnull.long, aes(x=plottingorder, y=as.numeric(value)))+
   theme(legend.position="none")
 figY
 
-#Multiplot script written by Winston Chang
-load("multiplot.R")
-multiplot(figX, figY, cols=1)
 
-#Pairwise t-tests for Beta Null
-t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","AbundanceNullDeviation"])
-t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="Reference","AbundanceNullDeviation"])
-t.test(betanull.out[betanull.out[,"Classification"]=="Reference","AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","AbundanceNullDeviation"])
+bnull.long.wuf=bnull.long[bnull.long[,"variable"]=="WUF_AbundanceNullDeviation",]
+figZ <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
+  geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
+  scale_size(guide=FALSE)+
+  scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
+  scale_x_continuous(name="Disturbance Intensity", breaks=c(1.5,7,15), labels=c("Ref", "FireAffected", "Recovered"))+
+  scale_y_continuous(name="Abundance Null Deviation")+
+  geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
+  theme_bw(base_size=10)+
+  theme(legend.position="none")
+figZ
+
+#Multiplot script written by Winston Chang
+#sometimes I have to copy/paste the multiplot.R script manually into the R workpace
+load("MiscSourceScripts/multiplot.R")
+
+dev.off()
+setEPS()
+postscript("Figures/Fig6AB.eps", width = 3.385, height=5, pointsize=9,paper="special")
+multiplot(figX, figY, figZ, cols=1)
+dev.off()
+
+#Pairwise t-tests for Bray Beta Null
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","BRAY_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","BRAY_AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","BRAY_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="Reference","BRAY_AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Reference","BRAY_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","BRAY_AbundanceNullDeviation"])
 #recovered and fire-affected are statistically distinct, p < 0.0006, all other comparisons p > 0.05
+
+#Pairwise t-tests for WUF Beta Null
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","WUF_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","WUF_AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Recovered","WUF_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="Reference","WUF_AbundanceNullDeviation"])
+t.test(betanull.out[betanull.out[,"Classification"]=="Reference","WUF_AbundanceNullDeviation"],betanull.out[betanull.out[,"Classification"]=="FireAffected","WUF_AbundanceNullDeviation"])
+#recovered and fire-affected are distinct, p < 0.04, all other comparisons p > 0.05
+
+#Are the WUF and Bray beta null correlated?
+cor.test(bnull.long.wuf[,"value"], bnull.long.bray[,"value"])
+#Pearson's R = 0.71, p = 0.001
+
 
 #####################
 ####Mantel and PROTEST tests between all resemblences (Supporting Table 3)
@@ -986,5 +1075,4 @@ for (i in 1:length(resem)){
 }
 
 colnames(m.out)=c("Dist1", "Dist2", "Mantel_R", "Mantel_p", "PROTEST_R", "PROTEST_m12", "PROTEST_p")
-write.table(m.out, "MantelDist.txt", quote=FALSE, sep="\t")
-
+#write.table(m.out, "Results/MantelDist.txt", quote=FALSE, sep="\t")
