@@ -277,7 +277,7 @@ beta <- read.table("InputFiles/weighted_unifrac_OTU_hdf5_filteredfailedalignment
 
 map.f<- read.table("InputFiles/Centralia_Full_Map.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
 beta <- beta[order(row.names(beta)),order(colnames(beta))]
-### Remove Mock
+#Remove Mock
 beta <- beta[-55,-55]
 library(vegan)
 beta.pcoa<- cmdscale(beta, eig=TRUE)
