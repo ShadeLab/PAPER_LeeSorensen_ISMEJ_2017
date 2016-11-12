@@ -218,10 +218,9 @@ colors=c("red", "yellow", "green")
 
 fig3 <- ggplot(data=div.long, aes(x=Classification, y=value))+
   geom_boxplot() + 
-  #geom_jitter()+
-  #geom_jitter(aes(shape=Classification))+
-  geom_jitter(aes(color=Classification, cex=1.5))+
-  facet_grid(.~variable, scales="free_y")+
+  geom_jitter(aes(shape=Classification))+
+  #geom_jitter(aes(color=Classification, cex=1.5))+
+  facet_grid(variable~., scales="free_y")+
   #scale_shape(guide=FALSE)+
   scale_size(guide=FALSE)+
   scale_color_manual(values=colors)+
@@ -253,7 +252,7 @@ for(i in 1:length(v)){
 }
 outdiv
 
-#Supporting table - assessing reproducibility among technical replicates
+#Supporting Table 2 - assessing reproducibility among technical replicates
 techdiv=read.table("InputFiles/OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000_alphadiv.txt")
 techdiv.out=NULL
 sampleIDs=c("C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08", "C09", "C10", "C11", "C12", "C13", "C14", "C15", "C16", "C17", "C18")
@@ -266,7 +265,7 @@ row.names(techdiv.out)=sampleIDs
 colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
 #write.table(techdiv.out, "Results/AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
-#Supporting PCoA - assessing reproducibility among technical replicates
+#Supporting PCoA (SFig 1)- assessing reproducibility among technical replicates
 beta <- read.table("InputFiles/weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
 
 map.f<- read.table("InputFiles/Centralia_Full_Map.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
@@ -298,14 +297,10 @@ Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
 library(calibrate)
-plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
-textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
-arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
-arrows(coordinates_avg_sd[,1]- coordinates_avg_sd[,2], coordinates_avg_sd[,3], coordinates_avg_sd[,1] + coordinates_avg_sd[,2], coordinates_avg_sd[,3], length=0.05, angle=90, code=3)
-
+#SFig 1
 dev.off()
 setEPS()
-postscript("Figures/SFig1.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+postscript("Figures/SFig1.eps", width = 6, height=6, pointsize=8,paper="special")
 plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Averaged Technical Replicates Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
 arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
@@ -315,9 +310,7 @@ dev.off()
 #########################
 ###Phylum-level responses  - FINISHED
 #load R libraries for this section
-library(gplots)
 library(ggplot2)
-
 
 #read in phylum level OTU table (QIIME output)
 comm.phylum=read.table("InputFiles/MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_L2.txt", sep="\t", header=TRUE, row.names=1)
@@ -389,47 +382,15 @@ for(i in 1:length(u)){
 colnames(out)=c("Phylum", "Tstatistic", "DF", "pvalue")
 #all results
 
+#Supporting Table 8
 out
 #extract overrepresented  in fire
 out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]>0,]
 
 #xtracted overrepresented in recovered
 out[out[,"pvalue"]<0.05 & out[,"Tstatistic"]<0,]
+#write.table(out, "Results/Phylum_ttest.txt",quote=FALSE, sep="\t")
 
-#write.table(out, "Phylum_ttest.txt",quote=FALSE, sep="\t")
-
-#heatmap of phylum-level responses, standardized (z-score) based on occurrences (oc) - across rows (gplots)
-#standardize responses
-comm.phylum.oc=decostand(comm.phylum, method="standardize", margin=1)
-comm.phylum.oc=as.matrix(comm.phylum.oc)
-
-
-#create color pallette; see: http://colorbrewer2.org/ 
-#hc=colorRampPalette(c("#91bfdb","white","#fc8d59"), interpolate="linear")
-
-#more info on heatmaps:  http://www.inside-r.org/packages/cran/gplots/docs/heatmap.2
-#dev.off()
-#This figure was omitted from paper
-#fig5B<-heatmap.2(comm.phylum.oc,col=hc(100),scale="row",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", labRow=phylumnames, colCol=c(map$Class_Color), margins=c(5,13), srtCol=90)
-
-#export heatmap 
-#dev.off()
-#178 mm is 7 inches
-#setEPS()
-#postscript("Figures/Fig5B.eps", width = 7, height=7, pointsize=10, paper="special")
-#fig<-heatmap.2(comm.phylum.oc,
-#            col=hc(100),
-#            scale="row",
-#            key=TRUE,
-#            symkey=FALSE, 
-#            trace="none", 
-#            density.info="none",
-#            dendrogram="both", 
-#            labRow=phylumnames, 
-#            colCol=c(map$Class_Color), 
-#            margins=c(5,13), 
-#            srtCol=90)
-#dev.off()
 
 ################################
 ###Comparative diversity analyses - FINISHED 
@@ -445,25 +406,17 @@ ax1.v=uf.pcoa$eig[1]/sum(uf.pcoa$eig)
 ax2.v=uf.pcoa$eig[2]/sum(uf.pcoa$eig)
 
 envEF=envfit(uf.pcoa, env)
-#Supporting Table
+#Supporting Table 4
 envEF
 
-#plot (fig 4)
 unique(map$Classification)
 Class=rep('black',nrow(map))
 Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
-plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v,3),"% var. explained",sep=""))
-#textxy is from the calibrate library
-textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=1)
-legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
-
-#Add env vectors to plot that are significant p < 0.10
-plot(envEF, p.max=0.10, col="black")
-
 #export figure 4
+#textxy is from the calibrate library
 dev.off()
 setEPS()
 postscript("Figures/Fig4.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
@@ -489,7 +442,8 @@ space=read.table("InputFiles/spatialdistancematrix.txt", header=TRUE, row.names=
 space.d=as.dist(space)
 mantel(uf.d,space.d)
 
-#Supporting analyses:  the variance explained by each distance (taxonomic/phylogenetic and weighted/unweighted)
+#Supporting Table 3A:  
+#the variance explained by each distance (taxonomic/phylogenetic and weighted/unweighted)
 bc.d=vegdist(t(comm), method="bray")
 sor.d=vegdist(t(comm), method="bray",binary=TRUE)
 
@@ -512,7 +466,7 @@ ax1.v.sor=sor.pcoa$eig[1]/sum(sor.pcoa$eig)
 ax2.v.sor=sor.pcoa$eig[2]/sum(sor.pcoa$eig)
 
 #####################
-#constrained PCoA (CAP) _ FINISHED
+#constrained PCoA (CAP) - FINISHED
 #to determine  explanatory value of abiotic factors for fire-affected sites, after temp is accounted for
 ###Comparative diversity analyses - FINISHED 
 #load R libraries for this section
@@ -528,11 +482,11 @@ labels=map[map$Classification=="FireAffected","SampleID"]
 uf.fire.pcoa=cmdscale(uf.fire.d, eig=TRUE)
 #fit environmental variables
 envFIT.fire=envfit(uf.fire.pcoa, env=env.fire)
-#print results to screen
+#print results to screen (Supporting Table 5)
 envFIT.fire
 
 #df <- data.frame((envFIT.fire$vectors)$arrows, (envFIT.fire$vectors)$r, (envFIT.fire$vectors)$pvals)
-#write.table(df, "ENV_Fire.txt", quote=FALSE, sep="\t")
+#write.table(df, "Results/ENV_Fire.txt", quote=FALSE, sep="\t")
 
 #calculate %var. explained by each axis
 ax1.v.f=uf.fire.pcoa$eig[1]/sum(uf.fire.pcoa$eig)
@@ -545,26 +499,19 @@ temp=env.fire[,"SoilTemperature_to10cm"]
 cap1=capscale(uf.fire.d~Condition(temp))
 #fit environmental variables
 c.ef=envfit(cap1, env.fire)
-#print results to screen
+#print results to screen (Supporting Table 6)
 c.ef
 
 #df <- data.frame((c.ef$vectors)$arrows, (c.ef$vectors)$r, (c.ef$vectors)$pvals)
-#write.table(df, "CAP.txt", quote=FALSE, sep="\t")
+#write.table(df, "Results/CAP.txt", quote=FALSE, sep="\t")
 
 #calculate % var. explained by each axis
 ax1.v.f.t=cap1$CA$eig[1]/sum(cap1$CA$eig)
 ax2.v.f.t=cap1$CA$eig[2]/sum(cap1$CA$eig)
 
-#Plot:  supporting figure
-par(mfrow=c(1,2))
-plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3)," var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3)," var. explained",sep=""))
-textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
-plot(envFIT.fire, p=0.10)
-plot(cap1, cex=0.9,main = "Temperature-constrained fire-affected soils PCoA", xlab=paste("CAP Ax1: ",100*round(ax1.v.f.t,3),"%var. explained",sep=""), ylab=paste("CAP Ax2: ",100*round(ax2.v.f.t,3),"%var. explained",sep=""))
-plot(c.ef, p= 0.10)
-
+#Plot:  supporting Figure 4
 setEPS()
-postscript("Figures/SFig3AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+postscript("Figures/SFig4AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
 par(mfrow=c(1,2))
 plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "(A) Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
@@ -577,8 +524,8 @@ dev.off()
 #Sloan neutral model fitting - FINISHED
 #NOTE:  must use full dataset (including singleton OTUs) for this analysis 
 #Source for model fits is from Burns et al. ISMEJ 2015, downloaded R code from their supporting materials
-#Source code requires:  minpack.lm, Hmisc, stats4 packages
-source("sncm.fit_function.R")
+#Source code requires:  minpack.lm, Hmisc, stats4 packages - make sure they are installed (and their dependencies)
+source("MiscSourceScripts/sncm.fit_function.r")
 
 #assign variables for function
 spp=t(comm.sigs)
@@ -614,6 +561,8 @@ l2=list(sta.np, sta.recT, sta.fireT)
 names=c("(A) All", "(B) Recovered", "(C) Fire_Affected")
 out.sta=NULL
 
+#Plot supporting Fig 5 panels
+
 for(i in 1:length(l1)){
   #define data
   temp=as.data.frame(l1[i])
@@ -628,16 +577,16 @@ for(i in 1:length(l1)){
   ap= temp$freq > (temp$pred.upr)
   bp= temp$freq < (temp$pred.lwr)
   
-  #plot figure (SFig4)
+  #plot figure (SFig5)
   setEPS()
   if(i == 1){
-  postscript("SFig5A.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig5A.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i == 2){
-  postscript("SFig5B.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig5B.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==3){
-  postscript("SFig5C.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig5C.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   
   plot(x=log(temp$p), y=temp$freq, main=names[i], xlab="Log Abundance", ylab="Occurrence Frequency")
@@ -653,78 +602,12 @@ for(i in 1:length(l1)){
 }
 
 colnames(out.sta)=c("%AbovePred", "%BelowPred")
+#Supporting Table 7
 results=cbind(results, out.sta)
-#write.table(results, "SloanNeutralModel.txt", quote=FALSE, sep="\t")
+results
+#write.table(results, "Results/SloanNeutralModel.txt", quote=FALSE, sep="\t")
 
 
-###########################
-###Venn analysis - not included in final ms
-#Limma must be installed from bioconductor using the commands below
-#source("http://bioconductor.org/biocLite.R")
-#biocLite("limma")
-# library(limma)
-# 
-# #make a binary OTU table for each fire classification
-# fireclass=map[,"Classification"]
-# 
-# active.pa=1*(comm[,fireclass=="FireAffected"]>0)
-# recov.pa=1*(comm[,fireclass=="Recovered"]>0)
-# ref.pa=1*(comm[,fireclass=="Reference"]>0)
-# 
-# #summarize and combine
-# venndata=cbind(1*rowSums(active.pa>0),1*rowSums(recov.pa>0),1*rowSums(ref.pa>0))
-# colnames(venndata)=c("Fire-affected", "Recovered", "Reference")
-# 
-# #apply venn analysis
-# v=vennCounts(venndata)
-# v2=round(v[,"Counts"]/sum(v[,"Counts"]),2)
-# v[,"Counts"]<-v2
-# vennDiagram(v)
-# 
-# 
-# #Write out the results of venncounts
-# write.table(v, "VennCounts.txt", quote=FALSE, sep="\t")
-# par(mfrow=c(1,1))
-# setEPS()
-# 
-# postscript("Figures/Venn.eps", width = 2.33, height=2.33, pointsize=8,paper="special")
-# par(mar=c(5,3,2,2)+0.1)
-# fig6=vennDiagram(v)
-# dev.off()
-
-
-#############################
-###Indicator species analysis - not included in the final manuscript
-# resource:  https://cran.r-project.org/web/packages/indicspecies/vignettes/indicspeciesTutorial.pdf
-# library(indicspecies)
-# 
-# comm.t=as.data.frame(t(comm))
-# class=as.vector(map$Classification)
-# ind=multipatt(comm.t, class, control=how(nperm=999), duleg = TRUE, func="IndVal.g")
-# summary(ind, alpha=0.001, indvalcomp=TRUE, At=0.95, Bt=0.95)
-# 
-# 
-# #taxonomic affiliations of the OTUs that are indicators of fire-affected soils (A and B > 0.95, p = 0.001)
-# rdp.nosigs[row.names(comm)=="OTU_dn_34"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_2"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_125"]
-# rdp.nosigs[row.names(comm)=="704748"]
-# rdp.nosigs[row.names(comm)=="240440"]
-# rdp.nosigs[row.names(comm)=="25116"]
-# 
-# #taxonomic affiliations of the top OTUs that are indicators of recovered soils (A and B = 1, p = 0.001)
-# rdp.nosigs[row.names(comm)=="OTU_dn_5462"]
-# rdp.nosigs[row.names(comm)=="511701"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_3443"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_1439"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_2728"]
-# rdp.nosigs[row.names(comm)=="OTU_dn_14082"]
-# 
-# #example to extract RDP taxonomy assignment
-# which(row.names(comm)=="704748", arr.ind = FALSE)
-# rdp.nosigs[138]
-# which(row.names(comm)=="OTU_dn_34", arr.ind = FALSE)
-# rdp.nosigs[41]
 ########################################
 #Extract cumulative most abundant OTUs from fire-affected soils
 dim(fire)
@@ -762,9 +645,8 @@ extractdominant.f<-function(data,rdp,top.no=10){
     out2=cbind(out2,rdp.out)
   }
   colnames(out2)=colnames(data)
-  #write.table(out2, paste("rdp_",top.no,".txt",sep=""), quote=FALSE, sep="\t")
+  #write.table(out2, paste("Results/rdp_",top.no,".txt",sep=""), quote=FALSE, sep="\t")
   #who are the top-10 ranked
-  
   u=unique(out1[,2])
   l=length(unique(out1[,2]))
   actual.prop=l/dim(out1)[[1]]
@@ -803,7 +685,7 @@ subsettop.f=function(data, top.no, rdp.in){
   #print(temp)
   u.top=unique(otuIDs)
   #temp.u=temp[is.element(temp[,"otuIDs"],u.top),]
-  #write.table(temp.u, "OTURDP_Top10.txt", sep="\t", quote=FALSE)
+  #write.table(temp.u, "Results/OTURDP_Top10.txt", sep="\t", quote=FALSE)
   top10.otu=NULL
   for(j in 1:nrow(data)){
     if(is.element(row.names(data)[j],u.top)){
@@ -821,31 +703,28 @@ length(grep("dn",rownames(topfire)))
 
 #create color pallette; see: http://colorbrewer2.org/ 
 hc=colorRampPalette(c("#91bfdb","white","#fc8d59"), interpolate="linear")
-
-heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 topfire.pa=1*(topfire>0)
 sum(rowSums(topfire.pa)==9)
 
 toprec=subsettop.f(rec.new,10, rdp.rec)
-heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 #how many OTUs are de novo
 length(grep("dn",rownames(toprec)))
 
+#Figure 7
 dev.off()
 setEPS()
-postscript("Figures/Fig7_test.eps", width = 7, height=7, pointsize=10, paper="special")
+postscript("Figures/Fig7A.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
-heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
 
 setEPS()
-postscript("Fig7B_2.eps", width = 3.5, height=7, pointsize=10, paper="special")
+postscript("Figures/Fig7B.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
 
 
 ###Beta null models
-#MODIFIED to use our dataset (comm.t) instead of "dune" and to only include the abundance-based model. We also changed the number of patches to by 18 to match with the dataset.
+#MODIFIED by als to use our dataset (comm.t) instead of "dune" and to only include the abundance-based model. We also changed the number of patches to by 18 to match with the dataset.
 #ORIGINAL scripts available in the appendix of the work below, published in Oikos (Appendix oik.02803, also R_analysis/oik-02803-appendix-to-Tucker2016/)
 #Note that beta null models with weighted UniFrac require ~75 hours walltime to complete with 4Gb memory and 1 processing node; beta-null models with Bray-Curtis only require ~30 hours
 
@@ -864,7 +743,7 @@ library(bipartite)
 source("oik-02803-appendix-to-Tucker2016/MetacommunityDynamicsFctsOikos.R")
 source("oik-02803-appendix-to-Tucker2016/PANullDevFctsOikos.R")
 
-##packages for UniFrac Null Model (weighted)
+##packages for UniFrac Null Model (weighted) #als add
 library(GUniFrac)
 library(ape)
 library(phangorn)
@@ -962,9 +841,10 @@ betanull.out=data.frame(I(beta_div_abund_stoch),I(bray_abund_null_dev),I(wuf_div
 colnames(betanull.out)=c("BRAY_beta_div_abund_stoch", "BRAY_AbundanceNullDeviation", "WUF_div_abund_stoch","WUF_AbundanceNullDeviation","SampleID","Classification", "SoilTemperature_to10cm")
 #write.table(betanull.out, "Results/bnullout_r1.txt", quote=FALSE, sep="\t")
 
+#The above bnull code may be better run e.g., on an HPCC - if so, read in results table
 #betanull.out=read.table("Results/bnullout_r1.txt", header=TRUE, sep="\t")
 
-#plottingorder orders samples along a chronosequence and disturbance intensity gradient, by 1) reference samples, 2) fire-affected, sites ranked from hottest to coolest soil temperatures; and 3) recovered sites ranked from hottest to coolest soil temepratures
+##plottingorder orders samples along a chronosequence and disturbance intensity gradient, by 1) reference samples, 2) fire-affected, sites ranked from hottest to coolest soil temperatures; and 3) recovered sites ranked from hottest to coolest soil temepratures
 plottingorder=c(13,15,12,17,14,9,16,1,6,4,11,8,3,7,5,10,2,18)
 
 library("reshape2")
@@ -972,7 +852,7 @@ bnull.long=melt(betanull.out, id.vars=c("SampleID", "Classification","SoilTemper
 
 GnYlOrRd=colorRampPalette(colors=c("green", "yellow", "orange","red"), bias=2)
 
-figX <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
+fig6A <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
   geom_boxplot()+ 
   geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   facet_grid(variable~., scales="free_y")+
@@ -981,7 +861,7 @@ figX <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
   scale_x_discrete(name="Fire classification", limits=c("Reference", "FireAffected", "Recovered"))+
   scale_y_continuous(name="Abundance Null Deviation")+
   theme_bw(base_size=10)
-figX
+fig6A
 
 figX2 <- ggplot(data=bnull.long, aes(x=variable, y=as.numeric(value)))+
   geom_boxplot()+ 
@@ -995,7 +875,7 @@ figX2 <- ggplot(data=bnull.long, aes(x=variable, y=as.numeric(value)))+
 figX2
 
 bnull.long.bray=bnull.long[bnull.long[,"variable"]=="BRAY_AbundanceNullDeviation",]
-figY <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
+fig6B <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
   geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   scale_size(guide=FALSE)+
   scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
@@ -1004,11 +884,11 @@ figY <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
   geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
   theme_bw(base_size=10)+
   theme(legend.position="none")
-figY
+fig6B
 
 
 bnull.long.wuf=bnull.long[bnull.long[,"variable"]=="WUF_AbundanceNullDeviation",]
-figZ <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
+fig6C <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
   geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   scale_size(guide=FALSE)+
   scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
@@ -1017,16 +897,15 @@ figZ <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
   geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
   theme_bw(base_size=10)+
   theme(legend.position="none")
-figZ
+fig6C
 
 #Multiplot script written by Winston Chang
-#sometimes I have to copy/paste the multiplot.R script manually into the R workpace
-load("MiscSourceScripts/multiplot.R")
+source("MiscSourceScripts/multiplot.R")
 
 dev.off()
 setEPS()
-postscript("Figures/Fig6AB.eps", width = 3.385, height=5, pointsize=9,paper="special")
-multiplot(figX, figY, figZ, cols=1)
+postscript("Figures/Fig6ABC.eps", width = 3.385, height=5, pointsize=9,paper="special")
+multiplot(fig6A, fig6B, fig6C, cols=1)
 dev.off()
 
 #Pairwise t-tests for Bray Beta Null
@@ -1074,5 +953,7 @@ for (i in 1:length(resem)){
   }
 }
 
+#Supporting Table 3B
 colnames(m.out)=c("Dist1", "Dist2", "Mantel_R", "Mantel_p", "PROTEST_R", "PROTEST_m12", "PROTEST_p")
+m.out
 #write.table(m.out, "Results/MantelDist.txt", quote=FALSE, sep="\t")

@@ -1,8 +1,7 @@
-####################
 ###  source script for multiplot function by Winston Chang in his online "Cookbook for R"
 ### http://www.cookbook-r.com/Graphs/Multiple_graphs_on_one_page_(ggplot2)/
-#### accessed 31 October 2016 als
-####################
+### accessed 31 October 2016 als
+
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   
