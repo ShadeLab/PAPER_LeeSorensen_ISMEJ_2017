@@ -257,7 +257,7 @@ count_seqs.py -i MASTER_RepSeqs_filteredfailedalignments_rmCM.fa
 ### OTU_hdf5_filteredfailedalignments_rdp_rmCM.biom
 ```
 
-### vii.  Make phylogeny using FastTree (version)
+### vii.  Make phylogeny using FastTree 
 ```
 #First, clean alignment by omitting highly variable regions before tree building - will make tree building more efficient
 filter_alignment.py -i qiime191_pynast_silva123/RepSeqs_aligned.fasta -o clean_alignment/
@@ -304,7 +304,7 @@ alpha_rarefaction.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collap
 alpha_diversity.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -m PD_whole_tree,observed_otus -t MASTER_RepSeqs_aligned_clean.tre -o MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000_alphadiv.txt
 
 #beta diversity analysis on even, collapsed dataset
-beta_diversity.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -t MASTER_RepSeqs_aligned_clean.tre -o betadiv_even321000/ -m unweighted_unifrac,weighted_unifrac
+beta_diversity.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -t MASTER_RepSeqs_aligned_clean.tre -o betadiv_even321000/ -m unweighted_unifrac,weighted_unifrac,weighted_normalized_unifrac
 
 #summarize at phylum level
 summarize_taxa.py -i MASTER_OTU_hdf5_filteredfailedalignments_rdp_rmCM_collapse_even321000.biom -L 2 -o phylum_summary/
