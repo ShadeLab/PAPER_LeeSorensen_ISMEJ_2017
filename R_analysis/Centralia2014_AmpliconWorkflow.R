@@ -36,14 +36,14 @@ library(outliers)
 #read in mapping file with soil data
 map=read.table("InputFiles/Centralia_Collapsed_Map_forR.txt", header=TRUE, sep="\t")
 
-#plot chemistry v. temperature (Figure 2)
+#plot chemistry v. temperature (Supporting Figure 3)
 #melt data
 map.long=melt(map, id.vars=c("SampleID", "SoilTemperature_to10cm", "Classification"), measure.vars=c("NO3N_ppm","NH4N_ppm","pH","SulfateSulfur_ppm","K_ppm","Ca_ppm","Mg_ppm","OrganicMatter_500","Fe_ppm", "As_ppm", "P_ppm", "SoilMoisture_Per"))
 
 #make a gradient color palette, note bias
 GnYlOrRd=colorRampPalette(colors=c("green", "yellow", "orange","red"), bias=2)
 
-fig2=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
+sfig3=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
   
   #add points layer
   geom_point(aes(y=as.numeric(SoilTemperature_to10cm), x=value, shape=Classification, color=as.numeric(SoilTemperature_to10cm)))+
@@ -63,8 +63,8 @@ fig2=ggplot(map.long, aes(y=as.numeric(SoilTemperature_to10cm), x=value))+
   #set a simple theme
   theme_bw(base_size=10)
 
-fig2
-#ggsave("Figures/Fig2.eps", width=178, units="mm")
+sfig3
+#ggsave("Figures/SFig3.eps", width=178, units="mm")
 
 ##Subset contextual data inclusive of soil quantitative variables
 env=map[,c("SoilTemperature_to10cm", "NO3N_ppm", "pH", "K_ppm", "Mg_ppm", "OrganicMatter_500", "NH4N_ppm", "SulfateSulfur_ppm", "Ca_ppm", "Fe_ppm", "As_ppm", "P_ppm", "SoilMoisture_Per","Fire_history")]
@@ -96,7 +96,7 @@ mean(env[map[,"Classification"]== "Recovered","pH"])
 map.long.counts=melt(map, id.vars=c("SampleID", "Classification"), measure.vars=c("rRNA_gene_copies_per_g_dry_soil","CellCounts_per_g_dry_soil"))
 labels=c(rRNA_gene_copies_per_g_dry_soil="rRNA gene copies",CellCounts_per_g_dry_soil="Cell counts")
 
-sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
+sfig4 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   geom_boxplot() + 
   geom_jitter(aes(shape=Classification))+
   facet_grid(variable~., scales="free_y", labeller=labeller(variable = labels))+
@@ -105,8 +105,8 @@ sfig2 <- ggplot(data=map.long.counts, aes(x=Classification, y=value))+
   scale_x_discrete(name="Fire classification")+
   scale_y_continuous(name="value per g dry soil")+
   theme_bw(base_size=10)
-sfig2
-#ggsave("Figures/SFig2.eps", width=86, units="mm")
+sfig4
+#ggsave("Figures/SFig4.eps", width=86, units="mm")
 
 #Pariwise t-tests for cell counts
 t.test(map[map[,"Classification"]=="Recovered","CellCounts_per_g_dry_soil"],map[map[,"Classification"]=="FireAffected","CellCounts_per_g_dry_soil"])
@@ -212,7 +212,7 @@ div=cbind(row.names(div),div,pielou, map$Classification)
 colnames(div)=c("SampleID", "PD", "Richness", "Pielou", "Classification")
    
 
-#plot (Figure 3)
+#plot (Figure 1)
 #reshape the data
 div.long=melt(div, id.vars=c("SampleID", "Classification"))
 
@@ -220,7 +220,7 @@ div.long=melt(div, id.vars=c("SampleID", "Classification"))
 #comment toggle for color v. bw
 colors=c("red", "yellow", "green")
 
-fig3 <- ggplot(data=div.long, aes(x=Classification, y=value))+
+fig1 <- ggplot(data=div.long, aes(x=Classification, y=value))+
   geom_boxplot() + 
   geom_jitter(aes(shape=Classification))+
   #geom_jitter(aes(color=Classification, cex=1.5))+
@@ -231,8 +231,8 @@ fig3 <- ggplot(data=div.long, aes(x=Classification, y=value))+
   scale_x_discrete(name="Fire classification")+
   scale_y_continuous(name="Diversity value")+
   theme_bw(base_size=10)
-fig3
-#ggsave("Figures/Fig3.eps", width=86, units="mm")
+fig1
+ggsave("Figures/Fig1.eps", width=86, units="mm")
 
 #ttest
 v=c("PD", "Richness", "Pielou")
@@ -272,7 +272,7 @@ row.names(techdiv.out)=sampleIDs
 colnames(techdiv.out)=c("PD_mean", "Richness_mean", "PD_sd", "Richness_sd")
 #write.table(techdiv.out, "Results/AlphaDiv_TechnicalReps.txt", quote=FALSE, sep="\t")
 
-#Supporting PCoA (SFig 1)- assessing reproducibility among technical replicates
+#Supporting PCoA (SFig 2)- assessing reproducibility among technical replicates
 beta <- read.table("InputFiles/weighted_unifrac_OTU_hdf5_filteredfailedalignments_rdp_rmCM_even53000.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
 
 map.f<- read.table("InputFiles/Centralia_Full_Map.txt", sep="\t", stringsAsFactors = FALSE, header = TRUE, row.names=1)
@@ -304,10 +304,10 @@ Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
 library(calibrate)
-#SFig 1
+#SFig 2
 dev.off()
 setEPS()
-postscript("Figures/SFig1.eps", width = 6, height=6, pointsize=8,paper="special")
+postscript("Figures/SFig2.eps", width = 6, height=6, pointsize=8,paper="special")
 plot(coordinates_avg_sd[,1],coordinates_avg_sd[,3] ,cex=1.5,pch=21,bg=Class,main="Averaged Technical Replicates Weighted UniFrac PCoA",xlab= paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100* round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=coordinates_avg_sd[,1], Y=coordinates_avg_sd[,3],labs=map$Sample, cex=1)
 arrows(coordinates_avg_sd[,1], coordinates_avg_sd[,3]- coordinates_avg_sd[,4], coordinates_avg_sd[,1], coordinates_avg_sd[,3]+ coordinates_avg_sd[,4], length=0.05, angle=90, code=3)
@@ -359,18 +359,18 @@ colnames(m.summary.p)=c("FireAffected", "Recovered", "Reference")
 #sort in decreasing total abundance order
 m.summary.p=m.summary.p[order(rowSums(m.summary.p),decreasing=TRUE),]
 
-#plot (Figure 5)
+#plot (Figure 3)
 m.summary.p.long=melt(m.summary.p, id.vars=row.names(m.summary.p),measure.vars=c("FireAffected", "Recovered", "Reference"))
 colors=c("red", "yellow", "green")
 
-fig5=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
+fig3=ggplot(m.summary.p.long, aes(x=Var1, y=value, fill=Var2))+
   geom_dotplot(binaxis="y", dotsize = 3)+
   facet_grid(Var2~.)+
   scale_fill_manual(values=colors, guide=FALSE)+
   labs(x="Phylum", y="Mean relative abundance", las=1)+
   theme(axis.text.x = element_text(angle = 90, size = 10, face = "italic"))
-fig5
-#ggsave("Figures/Fig5.eps", width=178, units="mm")
+fig3
+ggsave("Figures/Fig3.eps", width=178, units="mm")
 
 #Welch's t-test for all phyla
 u=row.names(comm.phylum)
@@ -423,11 +423,11 @@ Class[map$Classification=="FireAffected"]='red'
 Class[map$Classification=="Reference"]='green'
 Class[map$Classification=="Recovered"]='yellow'
 
-#export figure 4
+#export figure 2
 #textxy is from the calibrate library
 dev.off()
 setEPS()
-postscript("Figures/Fig4.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
+postscript("Figures/Fig2.eps", width = 3.385, height=3.385, pointsize=8,paper="special")
 plot(uf.pcoa$points[,1],uf.pcoa$points[,2] ,cex=1.5,pch=21,bg=Class,main="Weighted UniFrac PCoA", xlab= paste("PCoA1: ",100*round(ax1.v,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v,3),"%var. explained",sep=""))
 textxy(X=uf.pcoa$points[,1], Y=uf.pcoa$points[,2],labs=map$SampleID, cex=0.8)
 legend('bottomleft',c('Fire Affected','Recovered','Reference'),pch=21,pt.bg=c("red", "yellow", "green"),lty=0)
@@ -553,9 +553,9 @@ c.ef
 ax1.v.f.t=cap1$CA$eig[1]/sum(cap1$CA$eig)
 ax2.v.f.t=cap1$CA$eig[2]/sum(cap1$CA$eig)
 
-#Plot:  supporting Figure 4
+#Plot:  supporting Figure 6
 setEPS()
-postscript("Figures/SFig4AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
+postscript("Figures/SFig6AB.eps", width = 6.770, height=3.385, pointsize=8,paper="special")
 par(mfrow=c(1,2))
 plot(uf.fire.pcoa$points[,1],uf.fire.pcoa$points[,2], main= "(A) Fire-affected soils PCoA", type="n",xlab=paste("PCoA1: ",100*round(ax1.v.f,3),"% var. explained",sep=""), ylab= paste("PCoA2: ",100*round(ax2.v.f,3),"% var. explained",sep=""))
 textxy(X=uf.fire.pcoa$points[,1], Y=uf.fire.pcoa$points[,2],labs=labels, offset=0, cex=0.8)
@@ -606,7 +606,7 @@ l2=list(sta.np, sta.recT, sta.fireT)
 names=c("(A) All", "(B) Recovered", "(C) Fire_Affected")
 out.sta=NULL
 
-#Plot supporting Fig 5 panels
+#Plot supporting Fig 7 panels
 for(i in 1:length(l1)){
   #define data
   temp=as.data.frame(l1[i])
@@ -621,16 +621,16 @@ for(i in 1:length(l1)){
   ap= temp$freq > (temp$pred.upr)
   bp= temp$freq < (temp$pred.lwr)
   
-  #plot figure (SFig5)
+  #plot figure (SFig7)
   setEPS()
   if(i == 1){
-  postscript("Figures/SFig5A.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig7A.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i == 2){
-  postscript("Figures/SFig5B.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig7B.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   if (i ==3){
-  postscript("Figures/SFig5C.eps", width = 2.33, height=3, pointsize=10,paper="special")
+  postscript("Figures/SFig7C.eps", width = 2.33, height=3, pointsize=10,paper="special")
   }
   
   plot(x=log(temp$p), y=temp$freq, main=names[i], xlab="Log Abundance", ylab="Occurrence Frequency")
@@ -780,7 +780,7 @@ bnull.long=melt(betanull.out, id.vars=c("SampleID", "Classification","SoilTemper
 
 GnYlOrRd=colorRampPalette(colors=c("green", "yellow", "orange","red"), bias=2)
 
-fig6A <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
+fig4A <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
   geom_boxplot()+ 
   geom_jitter(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   facet_grid(variable~., scales="free_y")+
@@ -789,11 +789,11 @@ fig6A <- ggplot(data=bnull.long, aes(x=Classification, y=as.numeric(value)))+
   scale_x_discrete(name="Fire classification", limits=c("Reference", "FireAffected", "Recovered"))+
   scale_y_continuous(name="Abundance Null Deviation")+
   theme_bw(base_size=10)
-fig6A
+fig4A
 
 
 bnull.long.bray=bnull.long[bnull.long[,"variable"]=="BRAY_AbundanceNullDeviation",]
-fig6B <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
+fig4B <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))+
   geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   scale_size(guide=FALSE)+
   scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
@@ -802,11 +802,11 @@ fig6B <- ggplot(data=bnull.long.bray, aes(x=plottingorder, y=as.numeric(value)))
   geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
   theme_bw(base_size=10)+
   theme(legend.position="none")
-fig6B
+fig4B
 
 
 bnull.long.wuf=bnull.long[bnull.long[,"variable"]=="WUF_AbundanceNullDeviation",]
-fig6C <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
+fig4C <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
   geom_point(aes(color=as.numeric(SoilTemperature_to10cm), y=as.numeric(value)))+
   scale_size(guide=FALSE)+
   scale_color_gradientn(colours=GnYlOrRd(5), guide="colorbar", guide_legend(title="Temperature (Celsius)"))+
@@ -815,15 +815,15 @@ fig6C <- ggplot(data=bnull.long.wuf, aes(x=plottingorder, y=as.numeric(value)))+
   geom_vline(xintercept=c(2.5,11.5), col="gray", lty="dashed")+
   theme_bw(base_size=10)+
   theme(legend.position="none")
-fig6C
+fig4C
 
 #Multiplot script written by Winston Chang
 source("MiscSourceScripts/multiplot.R")
 
 dev.off()
 setEPS()
-postscript("Figures/Fig6ABC.eps", width = 3.385, height=5, pointsize=9,paper="special")
-multiplot(fig6A, fig6B, fig6C, cols=1)
+postscript("Figures/Fig4ABC.eps", width = 3.385, height=5, pointsize=9,paper="special")
+multiplot(fig4A, fig4B, fig4C, cols=1)
 dev.off()
 
 #Pairwise t-tests for Bray Beta Null
@@ -947,14 +947,14 @@ toprec=subsettop.f(rec.new,10, rdp.rec)
 #how many OTUs are de novo
 length(grep("dn",rownames(toprec)))
 
-#Figure 7
+#Figure 5
 dev.off()
 setEPS()
-postscript("Figures/Fig7A.eps", width = 3.5, height=7, pointsize=10, paper="special")
+postscript("Figures/Fig5A.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(topfire,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
 
 setEPS()
-postscript("Figures/Fig7B.eps", width = 3.5, height=7, pointsize=10, paper="special")
+postscript("Figures/Fig5B.eps", width = 3.5, height=7, pointsize=10, paper="special")
 heatmap.2(toprec,col=hc(100),scale="column",key=TRUE,symkey=FALSE, trace="none", density.info="none",dendrogram="both", margins=c(5,13), srtCol=90)
 dev.off()
